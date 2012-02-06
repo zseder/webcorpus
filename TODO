@@ -1,0 +1,10 @@
+- lots of codes/scripts to add
+- 2 Makefiles:
+  - compiler
+  - runner
+- dependency checker script (instead of configure)
+- flex cleanup (Andra1s)
+- splitcode related question
+  - splitcode.h as right now
+  - sed-ing a unique string to a splitcode in every script and source code
+    in Makefile before actual compiling?
