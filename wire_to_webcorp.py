@@ -2,7 +2,11 @@ import re
 import sys
 
 separator = re.compile("<!-- DOCID:([^ ]*) .*-->$")
-unique_sep = file("splitcode.h").read().split("\n")[0].split("\"")[1]
+try:
+    unique_sep = file("splitcode.h").read().split("\n")[0].split("\"")[1]
+except IOError, e:
+    sys.stderr.write("splitcode.h (that contains unique split code and is output of makesplitcode.sh) not found.\n")
+    raise e
 
 def main():
     prev_id = None
