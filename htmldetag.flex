@@ -1,3 +1,6 @@
+/**
+ * Removes html tags from html file
+**/
 %option noyywrap
 %s CONTENT
 %s SCRIPT STYLE CODE SAMP KBD VAR LISTING ADDRESS PRE COMMENT TAG TITLE

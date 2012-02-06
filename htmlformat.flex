@@ -1,3 +1,8 @@
+/**
+ * html formatting script
+ * removes empty lines, and multiple whitespaces
+**/
+
 %option noyywrap
 %s CONTENT PRECONTENT
 	#include "splitcode.h"

@@ -1,3 +1,8 @@
+/**
+ * Removes html attributes, comments
+ * Does some character conversion
+**/
+
 %option noyywrap
 %s CONTENT
 %s TAG DOUBLEQUO_VALUE SINGLEQUO_VALUE COMMENT ELEMENT
