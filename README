@@ -2,3 +2,7 @@ This project is a collection of scripts and programs for creating webcorpus
 from crawled data.
 The input is extracted data from wire crawler (http://www.cwr.cl/projects/WIRE/)
 and the output is a text file with document separators and raw text
+
+Dependencies:
+- gcc
+- flex
