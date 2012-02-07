@@ -4,36 +4,33 @@
 %option noyywrap
 %s CONTENT
 %s SCRIPT STYLE CODE SAMP KBD VAR LISTING ADDRESS PRE COMMENT TAG TITLE
-/* pre, address is blokkszerûen viselkedik, de ezek tartalmát töröljük is */
-/* br, img, option és li blokkelemszerûek, ezért ezeket felvesszük */
+/* pre, adress tags work like block but we drop them */
+/* br, img, option, li tags act like blocks so we add them */
 BLOCK ("br"|"img"|"option"|"li"|"p"|"ul"|"ol"|"h"[1-6]|"dir"|"menu"|"div"|"center"|"noscript"|"noframes"|"blockquote"|"form"|"isindex"|"hr"|"table"|"fieldset"|"th"|"td")
 CHARSTYLE ("i"|"b"|"tt"|"strike"|"s"|"u"|"big"|"small"|"font"|"span"|"em"|"strong"|"cite"|"dfn"|"abbr"|"acronym")
 	#include "splitcode.h"
 %%
 "DOCSTART "[0-9]+" "[0-9]+"\n" {		
-// kezdõdik a becsomagolt állomány
 		printf("%s",yytext);
 		BEGIN(CONTENT);
 	}
 
 "DOCEND "[0-9]+"\n" {		
-	// véget ér a becsomagolt állomány, ha jó a SPLITCODE
 		if (strncmp(yytext, SPLITCODE, SPLITCODELEN) == 0) {
 			BEGIN(INITIAL);
 			printf("\n");
 		}
 		printf("%s",yytext);
-	}
+}
 
 <CONTENT>"<""/"?{BLOCK}(" "[^>]*)?">" {
-		// bekezdéshatár a blokkelemeknél
+        /* handle every block as new paragraph */
 		printf("<p>");
-	}
+}
 	
-		/* karakterstílus elemek címkéinek törlése (szóköz nem marad utánuk) */
 <CONTENT>"<""/"?{CHARSTYLE}(" "[^>]*)?">"
 
-		/* rendszerint nem szöveget tartalmazó elemek törlése */
+    /* deleting tags that does not usually contain text */
 <CONTENT>"<title>" { BEGIN(TITLE); }
 <TITLE>"</title>" { BEGIN(CONTENT); }
 <CONTENT>"<script>" { BEGIN(SCRIPT); }
@@ -55,7 +52,7 @@ CHARSTYLE ("i"|"b"|"tt"|"strike"|"s"|"u"|"big"|"small"|"font"|"span"|"em"|"stron
 <CONTENT>"<pre>" { BEGIN(PRE); printf("<p>"); }
 <PRE>"</pre>" { BEGIN(CONTENT); }
 
-		/* egyéb címkék törlése, egy szóköz meghagyásával */
+    /* when removing other tags, add a space */
 <CONTENT>"<" { BEGIN(TAG); }
 
 <TAG>[a-zA-Z]*">" {
@@ -65,12 +62,11 @@ CHARSTYLE ("i"|"b"|"tt"|"strike"|"s"|"u"|"big"|"small"|"font"|"span"|"em"|"stron
 
 <SCRIPT,STYLE,CODE,SAMP,KBD,VAR,LISTING,ADDRESS,PRE,TAG,TITLE>.|"\n"
 
+    /* fixing \r endlines */
 <CONTENT>"\r" {
-		// kocsivissza karakter újsor karakterré alakítása
 		printf("\n");
 }
 
 <CONTENT>">" {
-		// > alakítása &gt;-vé
 		printf("&gt;");
 }

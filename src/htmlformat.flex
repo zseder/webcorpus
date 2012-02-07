@@ -5,50 +5,45 @@
 
 %option noyywrap
 %s CONTENT PRECONTENT
-	#include "splitcode.h"
+    #include "splitcode.h"
+    /* whitespaces: space, tab, \240 */
 SPACE [ 	\240]
 %%
 "DOCSTART "[0-9]+" "[0-9]+"\n" {		
-	// kezdõdik a becsomagolt állomány
 		printf("%s",yytext);
 		BEGIN(PRECONTENT);
-	}
+}
 
+    /* removing any whitespaces at start */
 <PRECONTENT>({SPACE}|"\n")* {
-		// állomány elején lévõ szóközök és üres sorok törlése
+		BEGIN(CONTENT);
+}
+
+    /* removing empty paragraphs from file start */
+<PRECONTENT>(<p>|{SPACE}|\n)*<p>(<p>|{SPACE}|\n)* {
 		BEGIN(CONTENT);
 }
 
 "DOCEND "[0-9]+"\n" {		
-		// véget ér a becsomagolt állomány, ha jó a SPLITCODE
 		if (strncmp(yytext, SPLITCODE, SPLITCODELEN) == 0) {
 			BEGIN(INITIAL);
 			printf("\n");
 		}
 		printf("%s",yytext);
-	}
+}
 
+    /* replacing more whitespaces with one */
 <CONTENT>{SPACE}{SPACE}+ {
-		// sorban szereplõ több szóköz egyre cserélése
 		printf(" ");
-	}
+}
 
+    /* removing empty lines */
 <CONTENT>"\n"({SPACE}|\n)+ {
-		// üres sorok törlése
 		printf("\n");
-	}
+}
 
+    /* add empty lines instead of paragraphs (<p>) */
 <CONTENT>(<p>|{SPACE}|\n)*"<p>"(<p>|{SPACE}|\n)* {
-		// üres bekezdések törlése
 		printf("\n\n");
-	}
+}
 
-<PRECONTENT>(<p>|{SPACE}|\n)*<p>(<p>|{SPACE}|\n)* {
-		// állomány elején lévõ üres bekezdések törlése
-		BEGIN(CONTENT);
-	}
-
-<CONTENT>"<p>" {
-		// bekezdés üres sorrá alakítása
-		printf("\n\n");
-	}
