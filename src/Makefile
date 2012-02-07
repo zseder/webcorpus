@@ -11,6 +11,7 @@ bin: $(BIN_DIR) build
 	@echo moving binaries...
 	mv htmlattrib htmldetag htmlformat $(BIN_DIR)/
 	mv splitcode.py $(BIN_DIR)/
+	cp wire_to_webcorp.py $(BIN_DIR)/
 
 clean:
 	rm -f $(HTML_SCRIPTS)

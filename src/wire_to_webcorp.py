@@ -1,12 +1,9 @@
 import re
 import sys
 
+from splitcode import SPLITCODE
+
 separator = re.compile("<!-- DOCID:([^ ]*) .*-->$")
-try:
-    unique_sep = file("splitcode.h").read().split("\n")[0].split("\"")[1]
-except IOError, e:
-    sys.stderr.write("splitcode.h (that contains unique split code and is output of makesplitcode.sh) not found.\n")
-    raise e
 
 def main():
     prev_id = None
@@ -14,9 +11,9 @@ def main():
         m = separator.match(line)
         if m is not None:
             if prev_id is not None:
-                print "DOCEND {0} {1}".format(unique_sep, prev_id)
+                print "DOCEND {0} {1}".format(SPLITCODE, prev_id)
             prev_id = m.group(1).strip()
-            print "DOCSTART {0} {1}".format(unique_sep, prev_id)
+            print "DOCSTART {0} {1}".format(SPLITCODE, prev_id)
         else:
             sys.stdout.write(line)
 
