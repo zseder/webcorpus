@@ -1,7 +1,23 @@
+BIN_DIR = ../bin
 HTML_SCRIPTS = htmlattrib htmldetag htmlformat
 
-all: $(HTML_SCRIPTS) 
+all: build bin
 	@echo Everything is ready
+
+build: $(HTML_SCRIPTS)
+	@echo Building..
+
+bin: $(BIN_DIR) build
+	@echo moving binaries...
+	mv htmlattrib htmldetag htmlformat $(BIN_DIR)/
+	mv splitcode.py $(BIN_DIR)/
+
+clean:
+	rm -f $(HTML_SCRIPTS)
+	@echo Not removing splitcode. Remove by hand if really needed
+
+$(BIN_DIR):
+	mkdir $(BIN_DIR)
 
 htmlattrib: splitcode.h htmlattrib.flex
 	@echo Compiling htmlattrib...
@@ -26,10 +42,9 @@ htmlformat: splitcode.h htmlformat.flex
 
 splitcode.h: makesplitcode.sh 
 	@echo Creating split code...
-	./$< > $@
+	./$< $@ splitcode.py
 
-clean:
-	rm -f $(HTML_SCRIPTS)
-	@echo Not removing splitcode.h. Remove by hand if really needed
+splitcode.py: makesplitcode.sh splitcode.h 
+
 
 
