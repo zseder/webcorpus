@@ -1,11 +1,4 @@
-- lots of codes/scripts to add
-- 2 Makefiles:
-  - compiler
-  - runner
 - dependency checker script (instead of configure)
 - flex should drop all sites that has unfinished tags
   - maybe later docfilter will do it, but DOCSTART/DOCEND can be messed up before
-- splitcode related question
-  - splitcode.h as right now
-  - sed-ing a unique string to a splitcode in every script and source code
-    in Makefile before actual compiling?
+- smart detection of wrong characters: "u with circumflex" replaced by double accent
