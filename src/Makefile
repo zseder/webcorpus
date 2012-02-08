@@ -10,6 +10,7 @@ build: $(HTML_SCRIPTS)
 bin: $(BIN_DIR) build
 	@echo moving binaries...
 	mv htmldetag htmlformat $(BIN_DIR)/
+	cp html_entity_replace.py $(BIN_DIR)/
 	if [ -e splitcode.py ]; then mv splitcode.py $(BIN_DIR)/; fi
 	cp wire_to_webcorp.py $(BIN_DIR)/
 	cp clean_wire_encoding.py file_coding_utils.py $(BIN_DIR)/
