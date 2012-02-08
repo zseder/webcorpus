@@ -1,5 +1,6 @@
 SCRIPTS = ../bin
 ENCODING = LATIN2
+SRC_DIR = ../src
 
 # Dictionaries
 define DICTS
@@ -13,10 +14,12 @@ endef
 	cat $< | python $(SCRIPTS)/clean_wire_encoding.py > $@
 
 %.parsed: %.cleaned_coding
-	cat $< | $(SCRIPTS)/wire_to_webcorp.py | $(SCRIPTS)/htmldetag | $(SCRIPTS)/htmlformat | $(SCRIPTS)/hun_clean > $@
+	cat $< | python $(SCRIPTS)/wire_to_webcorp.py | $(SCRIPTS)/htmldetag | $(SCRIPTS)/htmlformat > $@
+	#cat $< | python $(SCRIPTS)/wire_to_webcorp.py | $(SCRIPTS)/htmldetag | $(SCRIPTS)/htmlformat | $(SCRIPTS)/hun_clean > $@
 
 %.senfiltered: %.parsed
-	iconv -futf-8 -tutf-8 -c $< | $(SCRIPTS)/split-sentences.perl -l pl | $(SCRIPTS)/clean_sentence_splitter.sh | $(SCRIPTS)/sentencefilter > $@
+	#iconv -futf-8 -tutf-8 -c $< | $(SCRIPTS)/split-sentences.perl | $(SCRIPTS)/clean_sentence_splitter.sh | $(SCRIPTS)/sentencefilter > $@
+	iconv -c -futf-8 -tutf-8//IGNORE $< | $(SCRIPTS)/split-sentences.perl -d $(SRC_DIR) > $@
 
 %.hunspellfiltered: %.senfiltered
 	cat $< | python $(SCRIPTS)/vocab.py > /tmp/vocab
