@@ -47,3 +47,21 @@ SPACE [ 	\240]
 		printf("\n\n");
 }
 
+    /* clean up paragraph boundaries: only one empty line after every */
+    /* paragraph and whitespaces at line start are removed            */
+<CONTENT>{SPACE}*{NEWLINE}({SPACE}*{NEWLINE})+{SPACE}* {
+		printf("\n\n");
+	}
+
+    /* remove whitespaces before and after newline */
+<CONTENT>{SPACE}*{NEWLINE}{SPACE}* {
+		printf("\n");
+	}
+
+    /* spaces at line beginning removed */
+<CONTENT>^{SPACE}*
+
+    /* multiple spaces replaced by one */
+<CONTENT>{SPACE}* {
+		printf(" ");
+	}
