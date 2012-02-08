@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 # Based on Preprocessor written by Philipp Koehn
+# Changed only to detect document separator and skip running on those lines
 
 binmode(STDIN, ":utf8");
 binmode(STDOUT, ":utf8");

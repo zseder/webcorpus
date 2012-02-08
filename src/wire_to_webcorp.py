@@ -1,3 +1,8 @@
+"""
+This script changes wire-like document separators with the ones
+we use in all our scripts
+Reads from stdin and writes to stdout
+"""
 import re
 import sys
 
