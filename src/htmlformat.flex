@@ -8,6 +8,7 @@
     #include "splitcode.h"
     /* whitespaces: space, tab, \240 */
 SPACE [ 	\240]
+NEWLINE [\n\f\v]
 %%
 "DOCSTART "[0-9]+" "[0-9]+"\n" {		
 		printf("%s",yytext);
