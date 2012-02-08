@@ -1,7 +1,7 @@
 import re
 import sys
 
-from splitcode import SPLITCODE
+from splitcode import header, footer
 
 separator = re.compile("<!-- DOCID:([^ ]*) .*-->$")
 
@@ -11,9 +11,9 @@ def main():
         m = separator.match(line)
         if m is not None:
             if prev_id is not None:
-                print "DOCEND {0} {1}".format(SPLITCODE, prev_id)
+                print "{0} {1}".format(header, prev_id)
             prev_id = m.group(1).strip()
-            print "DOCSTART {0} {1}".format(SPLITCODE, prev_id)
+            print "{0} {1}".format(footer, prev_id)
         else:
             sys.stdout.write(line)
 
