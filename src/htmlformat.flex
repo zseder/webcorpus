@@ -25,12 +25,14 @@ NEWLINE [\n\f\v]
 		BEGIN(CONTENT);
 }
 
-"DOCEND "[0-9]+"\n" {		
+
+"DOCEND "[0-9]+" "[0-9]+"\n" {		
 		if (strncmp(yytext, SPLITCODE, SPLITCODELEN) == 0) {
+
 			BEGIN(INITIAL);
 			printf("\n");
 		}
-		printf("%s",yytext);
+		printf("\n%s",yytext);
 }
 
     /* replacing more whitespaces with one */
