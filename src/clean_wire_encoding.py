@@ -13,11 +13,11 @@ def get_best_detected(doc):
     if enc is not None:
         enc_result = test_encoding(doc, enc)
         if guessed_result < enc_result:
-            return doc.decode(guessed_enc, "ignore")
+            return doc.decode(guessed_enc, "replace")
         else:
-            return doc.decode(enc, "ignore")
+            return doc.decode(enc, "replace")
     else:
-        return doc.decode(guessed_enc, "ignore")
+        return doc.decode(guessed_enc, "replace")
 
 
 def mydecode(docid, doc):
@@ -26,7 +26,7 @@ def mydecode(docid, doc):
 
         utf_result = test_encoding(doc, "utf-8")
         if utf_result < 5:
-            decoded = doc.decode("utf-8", "ignore")
+            decoded = doc.decode("utf-8", "replace")
         else:
             enc_in_file = None
             if search_obj is not None:
