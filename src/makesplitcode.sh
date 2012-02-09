@@ -4,6 +4,6 @@ splitcode="$RANDOM$RANDOM$RANDOM$RANDOM$RANDOM$RANDOM$RANDOM$RANDOM$RANDOM"
 splitcodelen=$[ $(echo $splitcode | wc -c) - 1 ]
 echo "#define SPLITCODE \"$splitcode\"" > $1
 echo "#define SPLITCODELEN $splitcodelen" >>$1
-echo "SPLITCODE = $splitcode" > $2
-echo "header = \"DOCSTART \" + splitcode" >> $2
-echo "footer = \"DOCEND \" + splitcode" >> $2
+echo "SPLITCODE = \"$splitcode\"" > $2
+echo "header = \"DOCSTART \" + SPLITCODE" >> $2
+echo "footer = \"DOCEND \" + SPLITCODE" >> $2
