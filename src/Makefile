@@ -1,10 +1,19 @@
 BIN_DIR = ../bin
 HTML_SCRIPTS = htmldetag htmlformat
 
+CC = gcc
+CCPP = g++
+CPPFLAGS = -Wall -Wno-unknown-pragmas -Wno-long-long -Wno-variadic-macros \
+		   -pedantic \
+		   -Ilibs \
+		   -Wno-format \
+		   -g0 -O3
+CFLAGS = $(CPPFLAGS) -std=gnu99
+
 all: build bin
 	@echo Everything is ready
 
-build: $(HTML_SCRIPTS)
+build: $(HTML_SCRIPTS) sentencefilter
 	@echo Building..
 
 bin: $(BIN_DIR) build
@@ -15,6 +24,7 @@ bin: $(BIN_DIR) build
 	cp clean_wire_encoding.py file_coding_utils.py $(BIN_DIR)/
 	cp wire_to_webcorp.py $(BIN_DIR)/
 	cp split-sentences.perl $(BIN_DIR)/
+	mv sentencefilter $(BIN_DIR)/
 
 clean:
 	for f in $(HTML_SCRIPTS); do rm -f $(BIN_DIR)/$$f; done
@@ -22,6 +32,7 @@ clean:
 	rm -f $(BIN_DIR)/clean_wire_encoding.py $(BIN_DIR)/file_coding_utils.py
 	rm -f $(BIN_DIR)/wire_to_webcorp.py
 	rm -f $(BIN_DIR)/split-sentences.perl
+	rm -f $(BIN_DIR)/sentencefilter
 	rm -f $(BIN_DIR)/*pyc
 	@echo Not removing splitcode. Remove by hand if really needed
 
@@ -41,6 +52,13 @@ htmlformat: splitcode.h htmlformat.flex
 	gcc -lfl lex.yy.c -o htmlformat
 	rm lex.yy.c
 	@echo htmldetag done
+
+%.o: %.cc
+	$(CCPP) -c $(CPPFLAGS) -o $@ $<
+
+sentencefilter: sentencefilter.o splitcode.h
+	$(CCPP) -o $@ sentencefilter.o
+	rm sentencefilter.o
 
 splitcode.h: makesplitcode.sh 
 	@echo Creating split code...
