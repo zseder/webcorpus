@@ -1,9 +1,33 @@
+"""
+HTML unescaping
+
+HTMLParser.unescape() is an undocumented method but still useful
+if we only used htmlentitydefs.name2codepoint, we would not be
+able to escape numerical entities like &#822;
+
+xml.sax.saxutils.unescape() method also does less
+"""
 import sys
-import HTMLParser
+import re
 
-p = HTMLParser()
-
+from HTMLParser import HTMLParser as HP
+p = HP()
 for l in sys.stdin:
-    l = p.unescape(l.decode("utf-8"))
+    l = l.decode("utf-8", "replace")
+    while True:
+        try:
+            l = p.unescape(l)
+            break
+        except ValueError, e:
+            s = str(e)
+            if s.startswith("invalid literal for int()"):
+                sys.stderr.write(u"Replacing: \"{0}\" with ".format(l).encode("utf-8"))
+                before = l
+                l = re.sub("&#?x?" + s.split("'")[1] + ";", "", before)
+                if l == before:
+                    raise e
+                sys.stderr.write(u"\"{0}\"\n".format(l).encode("utf-8"))
+            else:
+                raise e
     sys.stdout.write(l.encode("utf-8"))
 
