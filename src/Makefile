@@ -12,15 +12,17 @@ bin: $(BIN_DIR) build
 	mv htmldetag htmlformat $(BIN_DIR)/
 	cp html_entity_replace.py $(BIN_DIR)/
 	if [ -e splitcode.py ]; then mv splitcode.py $(BIN_DIR)/; fi
-	cp wire_to_webcorp.py $(BIN_DIR)/
 	cp clean_wire_encoding.py file_coding_utils.py $(BIN_DIR)/
+	cp wire_to_webcorp.py $(BIN_DIR)/
 	cp split-sentences.perl $(BIN_DIR)/
 
 clean:
-	rm -f $(BIN_DIR)/$(HTML_SCRIPTS)
-	rm -f $(BIN_DIR)/wire_to_webcorp.py
+	for f in $(HTML_SCRIPTS); do rm -f $(BIN_DIR)/$$f; done
+	rm -f $(BIN_DIR)/html_entity_replace.py
 	rm -f $(BIN_DIR)/clean_wire_encoding.py $(BIN_DIR)/file_coding_utils.py
+	rm -f $(BIN_DIR)/wire_to_webcorp.py
 	rm -f $(BIN_DIR)/split-sentences.perl
+	rm -f $(BIN_DIR)/*pyc
 	@echo Not removing splitcode. Remove by hand if really needed
 
 $(BIN_DIR):
