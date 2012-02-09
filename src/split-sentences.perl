@@ -75,9 +75,11 @@ while(<STDIN>) {
 	}
     elsif (/^DOCSTART $splitcode/) {
         $header = $_;
+        print "\n$header\n";
     }
     elsif (/^DOCEND $splitcode/) {
         $footer = $_;
+        print "\n$footer\n";
     }
 	else {
 		#append the text, with a space
@@ -85,10 +87,8 @@ while(<STDIN>) {
 	}
 }
 
-print $header;
 #do the leftover text
 &do_it_for($text,"") if $text;
-print $footer;
 
 
 sub do_it_for {
