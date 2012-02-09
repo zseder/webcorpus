@@ -14,11 +14,10 @@ endef
 	cat $< | python $(SCRIPTS)/clean_wire_encoding.py > $@
 
 %.parsed: %.cleaned_coding
-	cat $< | python $(SCRIPTS)/wire_to_webcorp.py | $(SCRIPTS)/htmldetag | $(SCRIPTS)/htmlformat | python $(BIN_DIR)/html_entity_replace.py > $@
+	cat $< | python $(SCRIPTS)/wire_to_webcorp.py | $(SCRIPTS)/htmldetag | $(SCRIPTS)/htmlformat | python $(SCRIPTS)/html_entity_replace.py > $@
 
 %.senfiltered: %.parsed
-	#iconv -futf-8 -tutf-8 -c $< | $(SCRIPTS)/split-sentences.perl | $(SCRIPTS)/clean_sentence_splitter.sh | $(SCRIPTS)/sentencefilter > $@
-	cat $< | $(SCRIPTS)/split-sentences.perl -d $(SRC_DIR) > $@
+	cat $< | $(SCRIPTS)/split-sentences.perl -d $(SRC_DIR) | grep -v "^$$" | grep -v "^<[pP]>$$" | $(SCRIPTS)/sentencefilter > $@
 
 %.hunspellfiltered: %.senfiltered
 	cat $< | python $(SCRIPTS)/vocab.py > /tmp/vocab
