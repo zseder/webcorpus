@@ -18,7 +18,7 @@ def main():
             if prev_id is not None:
                 print "\n{0} {1}".format(footer, prev_id)
             prev_id = m.group(1).strip()
-            print "\n{0} {1}".format(header, prev_id)
+            print "{0} {1}".format(header, prev_id)
         else:
             sys.stdout.write(line)
 
