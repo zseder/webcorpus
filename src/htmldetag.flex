@@ -15,12 +15,12 @@ CHARSTYLE ("i"|"b"|"tt"|"strike"|"s"|"u"|"big"|"small"|"font"|"span"|"em"|"stron
 		BEGIN(CONTENT);
 	}
 
-"DOCEND "[0-9]+"\n" {		
+"DOCEND "[0-9]+" "[0-9]+"\n" {		
 		if (strncmp(yytext, SPLITCODE, SPLITCODELEN) == 0) {
 			BEGIN(INITIAL);
 			printf("\n");
 		}
-		printf("%s",yytext);
+		printf("\n%s",yytext);
 }
 
 <CONTENT>"<""/"?{BLOCK}(" "[^>]*)?">" {

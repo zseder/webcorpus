@@ -11,7 +11,7 @@ SPACE [ 	\240]
 NEWLINE [\n\f\v]
 %%
 "DOCSTART "[0-9]+" "[0-9]+"\n" {		
-		printf("%s",yytext);
+		printf("\n%s\n",yytext);
 		BEGIN(PRECONTENT);
 }
 
@@ -32,7 +32,7 @@ NEWLINE [\n\f\v]
 			BEGIN(INITIAL);
 			printf("\n");
 		}
-		printf("\n%s",yytext);
+		printf("\n%s\n",yytext);
 }
 
     /* replacing more whitespaces with one */
