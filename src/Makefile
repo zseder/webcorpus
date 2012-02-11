@@ -10,10 +10,14 @@ CPPFLAGS = -Wall -Wno-unknown-pragmas -Wno-long-long -Wno-variadic-macros \
 		   -g0 -O3
 CFLAGS = $(CPPFLAGS) -std=gnu99
 
+TEXTCAT_OPT = -I/home/zseder/Sandbox/textcat/libtextcat-2.2/src
+TEXTCAT_LIB_OPT =-L/home/zseder/.local/lib -ltextcat -static
+CPPFLAGS += $(TEXTCAT_OPT)
+
 all: build bin
 	@echo Everything is ready
 
-build: $(HTML_SCRIPTS) sentencefilter
+build: $(HTML_SCRIPTS) sentencefilter textcatfilter
 	@echo Building..
 
 bin: $(BIN_DIR) build
@@ -25,6 +29,7 @@ bin: $(BIN_DIR) build
 	cp wire_to_webcorp.py $(BIN_DIR)/
 	cp split-sentences.perl $(BIN_DIR)/
 	mv sentencefilter $(BIN_DIR)/
+	mv textcatfilter $(BIN_DIR)/
 
 clean:
 	for f in $(HTML_SCRIPTS); do rm -f $(BIN_DIR)/$$f; done
@@ -34,6 +39,8 @@ clean:
 	rm -f $(BIN_DIR)/split-sentences.perl
 	rm -f $(BIN_DIR)/sentencefilter
 	rm -f $(BIN_DIR)/*pyc
+	rm -f textcatfilter.o
+	rm -f $(BIN_DIR)/textcatfilter
 	@echo Not removing splitcode. Remove by hand if really needed
 
 $(BIN_DIR):
@@ -59,6 +66,9 @@ htmlformat: splitcode.h htmlformat.flex
 sentencefilter: sentencefilter.o splitcode.h
 	$(CCPP) -o $@ sentencefilter.o
 	rm sentencefilter.o
+
+textcatfilter: textcatfilter.o splitcode.h
+	$(CCPP) -o $@ textcatfilter.o $(TEXTCAT_LIB_OPT)
 
 splitcode.h: makesplitcode.sh 
 	@echo Creating split code...

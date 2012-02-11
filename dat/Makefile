@@ -1,11 +1,14 @@
 SCRIPTS = ../bin
-ENCODING = LATIN2
 SRC_DIR = ../src
 
 # Dictionaries
+# if before comma
 define DICTS
 polish:/home/zseder/Sandbox/HunspellDictionaries/Polish/pl_PL
+finnish:/home/zseder/Sandbox/HunspellDictionaries/Polish/pl_PL
 endef
+
+TEXTCAT_CONF = /home/zseder/Sandbox/textcat/libtextcat-2.2/langclass/conf.txt
 
 #all: $(OUTS)
 #	echo Done
@@ -19,11 +22,8 @@ endef
 %.senfiltered: %.parsed
 	cat $< | $(SCRIPTS)/split-sentences.perl -d $(SRC_DIR) | grep -v "^$$" | grep -v "^<[pP]>$$" | $(SCRIPTS)/sentencefilter > $@
 
-%.hunspellfiltered: %.senfiltered
-	cat $< | python $(SCRIPTS)/vocab.py > /tmp/vocab
-	bn=`basename $< .senfiltered`; dict=`echo $(DICTS) | grep $$bn | cut -f2 -d":"`; $(SCRIPTS)/hunspell.sh /tmp/vocab $$dict > /tmp/hunspell_out
-	cat $< | python $(SCRIPTS)/filter_by_hunspell.py /tmp/hunspell_out 2>`basename $< .senfiltered`.wrong > $@
-	rm /tmp/hunspell_out
+%.langfiltered: %.senfiltered
+	lang=`basename $< .senfiltered`;cat $< | $(SCRIPTS)/textcatfilter $(TEXTCAT_CONF) $$lang 2>$${lang}.wrong > $@
 	
 %.dedup: %.hunspellfiltered
 	cat $< | $(SCRIPTS)/docfilter | $(SCRIPTS)/dupfilter > $@
