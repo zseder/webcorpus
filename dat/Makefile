@@ -2,7 +2,6 @@ SCRIPTS = ../bin
 SRC_DIR = ../src
 
 # Dictionaries
-# if before comma
 define DICTS
 polish:/home/zseder/Sandbox/HunspellDictionaries/Polish/pl_PL
 finnish:/home/zseder/Sandbox/HunspellDictionaries/Polish/pl_PL
@@ -25,7 +24,7 @@ TEXTCAT_CONF = /home/zseder/Sandbox/textcat/libtextcat-2.2/langclass/conf.txt
 %.langfiltered: %.senfiltered
 	lang=`basename $< .senfiltered`;cat $< | $(SCRIPTS)/textcatfilter $(TEXTCAT_CONF) $$lang 2>$${lang}.wrong > $@
 	
-%.dedup: %.hunspellfiltered
+%.dedup: %.langfiltered
 	cat $< | $(SCRIPTS)/docfilter | $(SCRIPTS)/dupfilter > $@
 
 %.repl: %.dedup %.wrong

@@ -17,7 +17,7 @@ CPPFLAGS += $(TEXTCAT_OPT)
 all: build bin
 	@echo Everything is ready
 
-build: $(HTML_SCRIPTS) sentencefilter textcatfilter
+build: $(HTML_SCRIPTS) sentencefilter textcatfilter docfilter dupfilter
 	@echo Building..
 
 bin: $(BIN_DIR) build
@@ -30,6 +30,7 @@ bin: $(BIN_DIR) build
 	cp split-sentences.perl $(BIN_DIR)/
 	mv sentencefilter $(BIN_DIR)/
 	mv textcatfilter $(BIN_DIR)/
+	mv docfilter dupfilter $(BIN_DIR)/
 
 clean:
 	for f in $(HTML_SCRIPTS); do rm -f $(BIN_DIR)/$$f; done
@@ -39,8 +40,9 @@ clean:
 	rm -f $(BIN_DIR)/split-sentences.perl
 	rm -f $(BIN_DIR)/sentencefilter
 	rm -f $(BIN_DIR)/*pyc
-	rm -f textcatfilter.o
 	rm -f $(BIN_DIR)/textcatfilter
+	rm -f $(BIN_DIR)/docfilter
+	rm -f $(BIN_DIR)/dupfilter
 	@echo Not removing splitcode. Remove by hand if really needed
 
 $(BIN_DIR):
@@ -67,8 +69,17 @@ sentencefilter: sentencefilter.o splitcode.h
 	$(CCPP) -o $@ sentencefilter.o
 	rm sentencefilter.o
 
+docfilter: docfilter.o splitcode.h
+	$(CCPP) -o $@ docfilter.o
+	rm docfilter.o
+
+dupfilter: dupfilter.o splitcode.h
+	$(CCPP) -o $@ dupfilter.o
+	rm dupfilter.o
+
 textcatfilter: textcatfilter.o splitcode.h
 	$(CCPP) -o $@ textcatfilter.o $(TEXTCAT_LIB_OPT)
+	rm textcatfilter.o
 
 splitcode.h: makesplitcode.sh 
 	@echo Creating split code...
