@@ -8,6 +8,11 @@ Dependencies:
 - flex
 - libtextcat
   - WARNING: libtextcat unfortunately uses confidence parameter as predefined,
-    and it cannot be changed in runtime, so its constants.h has to be modified
-    langclass/conf.txt should be also changed to fing language models
+    and it cannot be changed in runtime, we created a little patch that does the
+    work so before compiling and installing libtextcat, please apply our patch
+    at src/libtextcat-2.2.patch with
+    - patch -p1 < /path/to/libtextcat-2.2.patch # while being in a directory
+      that contains original libtextcat-2.2; or
+    - patch -p2 < /path/to/libtextcat-2.2.patch # while being in the actual
+      libtextcat-2.2 directory
 

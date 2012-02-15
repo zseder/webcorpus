@@ -1,0 +1,81 @@
+diff -rupN original//libtextcat-2.2/src/testtextcat.c new//libtextcat-2.2/src/testtextcat.c
+--- original//libtextcat-2.2/src/testtextcat.c	2003-05-22 13:32:43.000000000 +0200
++++ new//libtextcat-2.2/src/testtextcat.c	2012-02-13 16:54:21.649984716 +0100
+@@ -84,7 +84,7 @@ int main( int argc, char **argv )
+ 
+ 	printf("%s\n", textcat_Version());
+ 
+-	h = textcat_Init( argc>1?argv[1]:"conf.txt" );
++	h = textcat_Init( argc>1?argv[1]:"conf.txt" , 1.1, 2);
+ 	if ( !h ) {
+ 		printf("Unable to init. Aborting.\n");
+ 		exit(-1);
+diff -rupN original//libtextcat-2.2/src/textcat.c new//libtextcat-2.2/src/textcat.c
+--- original//libtextcat-2.2/src/textcat.c	2003-05-22 13:32:43.000000000 +0200
++++ new//libtextcat-2.2/src/textcat.c	2012-02-13 16:54:21.649984716 +0100
+@@ -76,6 +76,8 @@ typedef struct {
+ 	void **fprint;
+ 	uint4 size;
+ 	uint4 maxsize;
++    uint4 maxcandidates;
++    float threshold;
+ 
+ 	char output[MAXOUTPUTSIZE];
+ 
+@@ -116,7 +118,7 @@ extern void textcat_Done( void *handle )
+ 
+ }
+ 
+-extern void *textcat_Init( const char *conffile )
++extern void *textcat_Init( const char *conffile, float threshold, int maxcandidates )
+ {
+ 	textcat_t *h;
+ 	char line[1024];
+@@ -133,6 +135,8 @@ extern void *textcat_Init( const char *c
+ 	h = (textcat_t *)wg_malloc(sizeof(textcat_t));
+ 	h->size = 0;
+ 	h->maxsize = 16;
++    h->threshold = threshold;
++    h->maxcandidates = (uint4) maxcandidates;
+ 	h->fprint = (void **)wg_malloc( sizeof(void*) * h->maxsize );
+ 
+ 	while ( wg_getline( line, 1024, fp ) ) {
+@@ -211,7 +215,7 @@ extern char *textcat_Classify( void *han
+ 		candidates[i].name = fp_Name( h->fprint[i] );
+ 		if ( score < minscore ) {
+ 			minscore = score;
+-			threshold = (int)( (double)score * THRESHOLDVALUE );
++			threshold = (int)( (double)score * h->threshold);
+ 		}
+ 	}
+ 
+@@ -219,7 +223,7 @@ extern char *textcat_Classify( void *han
+ 	for (i=0; i<h->size; i++) {
+ 		if ( candidates[i].score < threshold ) {
+ 
+-			if ( ++cnt == MAXCANDIDATES+1 ) {
++			if ( ++cnt == h->maxcandidates+1 ) {
+ 				break;
+ 			}
+ 
+@@ -229,7 +233,7 @@ extern char *textcat_Classify( void *han
+ 	}
+ 
+ 	/*** The verdict ***/
+-	if ( cnt == MAXCANDIDATES+1 ) {
++	if ( cnt == h->maxcandidates+1 ) {
+ 		result = _TEXTCAT_RESULT_UNKOWN;
+ 	}
+ 	else {
+diff -rupN original//libtextcat-2.2/src/textcat.h new//libtextcat-2.2/src/textcat.h
+--- original//libtextcat-2.2/src/textcat.h	2003-05-19 14:16:31.000000000 +0200
++++ new//libtextcat-2.2/src/textcat.h	2012-02-13 16:54:21.649984716 +0100
+@@ -52,7 +52,7 @@
+  * only way errors can occur, is when the library cannot read the
+  * conffile, or one of the fingerprint files listed in it.)
+  */
+-extern void *textcat_Init( const char *conffile );
++extern void *textcat_Init( const char *conffile, float threshold, int maxcandidates );
+ 
+ /**
+  * textcat_Done() - Free up resources for handle
