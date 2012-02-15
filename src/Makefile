@@ -17,12 +17,13 @@ CPPFLAGS += $(TEXTCAT_OPT)
 all: build bin
 	@echo Everything is ready
 
-build: $(HTML_SCRIPTS) sentencefilter textcatfilter docfilter dupfilter
+build: $(HTML_SCRIPTS) get_htmlbodies_from_wire sentencefilter textcatfilter docfilter dupfilter
 	@echo Building..
 
 bin: $(BIN_DIR) build
 	@echo moving binaries...
 	mv htmldetag htmlformat $(BIN_DIR)/
+	mv get_htmlbodies_from_wire $(BIN_DIR)/
 	cp html_entity_replace.py $(BIN_DIR)/
 	if [ -e splitcode.py ]; then mv splitcode.py $(BIN_DIR)/; fi
 	cp clean_wire_encoding.py file_coding_utils.py $(BIN_DIR)/
@@ -34,6 +35,7 @@ bin: $(BIN_DIR) build
 
 clean:
 	for f in $(HTML_SCRIPTS); do rm -f $(BIN_DIR)/$$f; done
+	rm -f $(BIN_DIR)/get_htmlbodies_from_wire
 	rm -f $(BIN_DIR)/html_entity_replace.py
 	rm -f $(BIN_DIR)/clean_wire_encoding.py $(BIN_DIR)/file_coding_utils.py
 	rm -f $(BIN_DIR)/wire_to_webcorp.py
@@ -60,7 +62,14 @@ htmlformat: splitcode.h htmlformat.flex
 	flex -i htmlformat.flex # -i -> ignore case, -f -8 fast
 	gcc -lfl lex.yy.c -o htmlformat
 	rm lex.yy.c
-	@echo htmldetag done
+	@echo htmlformat done
+
+get_htmlbodies_from_wire: splitcode.h get_htmlbodies_from_wire.flex
+	@echo Compiling get_htmlbodies_from_wire...
+	flex -i get_htmlbodies_from_wire.flex # -i -> ignore case, -f -8 fast
+	gcc -lfl lex.yy.c -o get_htmlbodies_from_wire
+	rm lex.yy.c
+	@echo get_htmlbodies_from_wire done
 
 %.o: %.cc
 	$(CCPP) -c $(CPPFLAGS) -o $@ $<
