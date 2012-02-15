@@ -13,11 +13,11 @@ TEXTCAT_CONF_LIMIT = 1.05
 #all: $(OUTS)
 #	echo Done
 
-%.cleaned_coding: %.wire
-	cat $< | python $(SCRIPTS)/clean_wire_encoding.py > $@
+%.raw: %.wire
+	cat $< | python $(SCRIPTS)/clean_wire_encoding.py | python $(SCRIPTS)/wire_to_webcorp.py > $@
 
-%.parsed: %.cleaned_coding
-	cat $< | python $(SCRIPTS)/wire_to_webcorp.py | $(SCRIPTS)/htmldetag | $(SCRIPTS)/htmlformat | python $(SCRIPTS)/html_entity_replace.py > $@
+%.parsed: %.raw
+	cat $< | $(SCRIPTS)/htmldetag | $(SCRIPTS)/htmlformat | python $(SCRIPTS)/html_entity_replace.py > $@
 
 %.senfiltered: %.parsed
 	cat $< | $(SCRIPTS)/split-sentences.perl -d $(SRC_DIR) | grep -v "^$$" | grep -v "^<[pP]>$$" | $(SCRIPTS)/sentencefilter > $@
@@ -35,6 +35,6 @@ TEXTCAT_CONF_LIMIT = 1.05
 	python $(SCRIPTS)/ngrams/similar.py /tmp/good_ngrams /tmp/bad_ngrams /tmp/susp > $@
 	rm /tmp/bad_ngrams /tmp/good_ngrams
 
-%.tok: %.replaced
+%.tok: %.dedup
 	cat $< | $(SCRIPTS)/tokenizer.pl > $@
 
