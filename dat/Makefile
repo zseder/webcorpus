@@ -13,8 +13,13 @@ TEXTCAT_CONF_LIMIT = 1.05
 #all: $(OUTS)
 #	echo Done
 
+# This is for storage.raw files if something is messed up while
+# running WIRE and so data cannot be extracted with its wire-info-extract method
+%.raw: %.not_extractable_wire
+	cat $< | $(SCRIPTS)/get_htmlbodies_from_wire | python $(SCRIPTS)/clean_wire_encoding.py> $@
+
 %.raw: %.wire
-	cat $< | python $(SCRIPTS)/clean_wire_encoding.py | python $(SCRIPTS)/wire_to_webcorp.py > $@
+	cat $< | python $(SCRIPTS)/wire_to_webcorp.py | python $(SCRIPTS)/clean_wire_encoding.py > $@
 
 %.parsed: %.raw
 	cat $< | $(SCRIPTS)/htmldetag | $(SCRIPTS)/htmlformat | python $(SCRIPTS)/html_entity_replace.py > $@

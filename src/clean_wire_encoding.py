@@ -1,68 +1,86 @@
 import sys
 import re
 from encodings.aliases import aliases
-from file_coding_utils import *
+
+from splitcode import header, footer
 
 charset_pattern = re.compile(r"<meta[^>]*charset=([a-zA-Z\-0-9\"\']*)")
 available_encodings = set(aliases.keys() + aliases.values()) 
 
-def get_best_detected(doc):
-    enc = detect_encoding(doc)
-    guessed_enc = guess_encoding(doc)
-    guessed_result = test_encoding(doc, guessed_enc)
-    if enc is not None:
-        enc_result = test_encoding(doc, enc)
-        if guessed_result < enc_result:
-            return doc.decode(guessed_enc, "replace")
-        else:
-            return doc.decode(enc, "replace")
-    else:
-        return doc.decode(guessed_enc, "replace")
+# for detect invalid positions in UnicodeError message
+position_interval_pattern = re.compile(r"position ([0-9]*)-([0-9]*)")
+position_pattern = re.compile(r"position ([0-9]*):")
 
-
-def mydecode(docid, doc):
-    if docid is not None:
-        search_obj = charset_pattern.search(doc)
-
-        utf_result = test_encoding(doc, "utf-8")
-        if utf_result < 5:
-            decoded = doc.decode("utf-8", "replace")
-        else:
-            enc_in_file = None
-            if search_obj is not None:
-                enc_in_file = search_obj.group(1).strip("\"").strip("'")
-                if enc_in_file is not None and enc_in_file in available_encodings and test_encoding(doc, enc_in_file) == 0:
-                    decoded = doc.decode(enc_in_file)
-                else:
-                    decoded = get_best_detected(doc)
+def test_encoding(t, enc):
+    """
+    tests a "t" text decoding with enc and returns how many decode errors
+    occured in the whole text
+    """
+    c = 0
+    while True:
+        try:
+            t = t.decode(enc)
+            break
+        except LookupError:
+            return len(t)
+        except UnicodeError, e:
+            msg = str(e)
+            s = position_interval_pattern.search(msg)
+            if s is not None:
+                start, stop = int(s.group(1)), int(s.group(2))
+                t = t[stop+1:]
+                c += 1
             else:
-                decoded = get_best_detected(doc)
+                s = position_pattern.search(msg)
+                if s is not None:
+                    pos = int(s.group(1))
+                    t = t[pos+1:]
+                    c += 1
+                else:
+                    raise e
+    return c
+
+def mydecode(doc):
+    """
+    decodes doc first with utf-8, but if fails, tries to detect
+    encoding and decode doc with that
+    """
+    search_obj = charset_pattern.search(doc)
+
+    utf_result = test_encoding(doc, "utf-8")
+    if utf_result < 5:
+        decoded = doc.decode("utf-8", "replace")
         return decoded
+    else:
+        enc_in_file = None
+        if search_obj is not None:
+            enc_in_file = search_obj.group(1).strip("\"").strip("'")
+            if enc_in_file is not None and enc_in_file in available_encodings and test_encoding(doc, enc_in_file) == 0:
+                decoded = doc.decode(enc_in_file)
+                return decoded
 
 def read(f):
-    id_pattern = re.compile(r"<!-- DOCID:([^ ]*) SIZE:.* -->$")
+    """
+    Iterates through all documents and decode them
+    """
     # remove any invalid utf-8 characters
     re_pattern = re.compile(u'[\uFFFF]', re.UNICODE)
-    prevdocid = None
-    prevdoc = ""
+    mydoc = ""
+    myheader = None
     for l in f:
-        l = l.strip()
-        m = id_pattern.match(l)
-        if m is not None:
-            if prevdocid is not None:
-                decoded = mydecode(prevdocid, prevdoc)
-                print prevdocid
+        if l.startswith(header):
+            myheader = l.strip()
+            mydoc = ""
+        elif l.startswith(footer):
+            decoded = mydecode(mydoc)
+            print myheader
+            if decoded is not None:
                 print re_pattern.sub(u'\uFFFD', decoded.encode("utf-8").strip())
-            prevdocid = m.group(0)
-            prevdoc = ""
+            else:
+                print mydoc
+            sys.stdout.write(l)
         else:
-            prevdoc += l + "\n"
-
-    # handling last doc
-    decoded = mydecode(prevdocid, prevdoc)
-    print prevdocid
-    print decoded.encode("utf-8").strip()
-    print re_pattern.sub(u'\uFFFD', decoded.encode("utf-8").strip())
+            mydoc += l
 
 def main():
     read(sys.stdin)
