@@ -16,7 +16,7 @@ TEXTCAT_CONF_LIMIT = 1.05
 # This is for storage.raw files if something is messed up while
 # running WIRE and so data cannot be extracted with its wire-info-extract method
 %.raw: %.not_extractable_wire
-	cat $< | $(SCRIPTS)/get_htmlbodies_from_wire | python $(SCRIPTS)/clean_wire_encoding.py> $@
+	cat $< | $(SCRIPTS)/get_htmls_from_wire | python $(SCRIPTS)/clean_wire_encoding.py> $@
 
 %.raw: %.wire
 	cat $< | python $(SCRIPTS)/wire_to_webcorp.py | python $(SCRIPTS)/clean_wire_encoding.py > $@
@@ -33,12 +33,23 @@ TEXTCAT_CONF_LIMIT = 1.05
 %.dedup: %.langfiltered
 	cat $< | $(SCRIPTS)/docfilter | $(SCRIPTS)/dupfilter > $@
 
-%.repl: %.dedup %.bad
-	python $(SCRIPTS)/ngrams/ngrams.py $*.bad 3 >/tmp/bad_ngrams
-	python $(SCRIPTS)/ngrams/ngrams.py $*.dedup 3 >/tmp/good_ngrams
-	python $(SCRIPTS)/ngrams/get_susp_chars.py /tmp/good_ngrams /tmp/bad_ngrams > /tmp/susp
-	python $(SCRIPTS)/ngrams/similar.py /tmp/good_ngrams /tmp/bad_ngrams /tmp/susp > $@
-	rm /tmp/bad_ngrams /tmp/good_ngrams
+%._susp_chars: %.dedup %.bad
+	python $(SCRIPTS)/ngrams.py $*.bad 3 > $*.bad.ngrams
+	python $(SCRIPTS)/ngrams.py $*.dedup 3 > $*.good.ngrams
+	python $(SCRIPTS)/get_susp_chars.py $*.good.ngrams $*.bad.ngrams > $@
+
+%.susp_chars:
+	@echo "Choosing suspicious characters from candidates (_susp_chars) has to be done manually"
+
+%._similar: %.susp_chars %.bad.ngrams %.good.ngrams
+	python $(SCRIPTS)/similar.py $*.good.ngrams $*.bad.ngrams $*.susp_chars > $@
+	rm $*.bad.ngrams $*.good.ngrams
+
+%.similar:
+	@echo "Choosing similar character pairs (to be replaced) from candidates (_similar) has to be done manually"
+
+%.susp_chars_replaced: %.similar %.senfiltered
+	cat $*.senfiltered | python $(SCRIPTS)/simple_replacer.py $*.similar > $@
 
 %.tok: %.dedup
 	cat $< | $(SCRIPTS)/tokenizer.pl > $@

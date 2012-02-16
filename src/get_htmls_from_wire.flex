@@ -1,28 +1,62 @@
 /**
- * Reads WIRE and extracts everything between <body> and
- * </body> html tags. This script is useful only when data
+ * Reads WIRE and extracts html data 
+ * This script is useful only when data
  * from WIRE cannot be extracted with wire-info-extract
  * because its storage is messed up somehow
 **/
 %option noyywrap
-%x CONTENT
+%x HTML BODY
+%{
 	#include "splitcode.h"
+    int was_html = 0;
+    long docid = 0;
+%}
+
 %%
 <INITIAL>"<body>" {
-    printf("DOCSTART %s\n", SPLITCODE);
-    printf("<body>");
-    BEGIN(CONTENT);
+    docid++;
+    printf("DOCSTART %s %d\n", SPLITCODE, docid);
+    printf("<html><body>");
+    was_html = 0;
+    BEGIN(HTML);
+}
+<INITIAL>"<html>" {
+    docid++;
+    printf("DOCSTART %s %d\n", SPLITCODE, docid);
+    printf("<html>");
+    was_html = 1;
+    BEGIN(HTML);
+}
+
+<INITIAL>"<head>" {
+    docid++;
+    printf("DOCSTART %s %d\n", SPLITCODE, docid);
+    printf("<html><head>");
+    was_html = 0;
+    BEGIN(HTML);
 }
 
 <INITIAL>.
 
-<CONTENT>"</body>" {
-    printf("<body>\n");
-    printf("DOCEND %s\n", SPLITCODE);
-    BEGIN(0);
+<HTML>"</body>" {
+    printf("</body>");
+    if(!was_html) {
+        printf("</html>\n");
+        printf("DOCEND %s %d\n", SPLITCODE, docid);
+        BEGIN(0);
+    }
 }
 
-<CONTENT>(.|\n) {
-    printf("%s", yytext);
+<HTML>"</html>" {
+    if(was_html) {
+        printf("</html>\n");
+        printf("DOCEND %s\n", SPLITCODE);
+        was_html = 0;
+        BEGIN(0);
+    }
 }
+
+    /*<CONTENT>(.|\n) {
+        printf("%s", yytext);
+    }*/
 
