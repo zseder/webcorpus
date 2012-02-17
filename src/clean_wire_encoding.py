@@ -45,13 +45,13 @@ def mydecode(doc):
     decodes doc first with utf-8, but if fails, tries to detect
     encoding and decode doc with that
     """
-    search_obj = charset_pattern.search(doc)
 
     utf_result = test_encoding(doc, "utf-8")
     if utf_result < 5:
         decoded = doc.decode("utf-8", "replace")
         return decoded
     else:
+        search_obj = charset_pattern.search(doc)
         enc_in_file = None
         if search_obj is not None:
             enc_in_file = search_obj.group(1).strip("\"").strip("'")
