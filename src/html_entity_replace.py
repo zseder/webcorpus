@@ -21,12 +21,10 @@ for l in sys.stdin:
         except ValueError, e:
             s = str(e)
             if s.startswith("invalid literal for int()"):
-                sys.stderr.write(u"Replacing: \"{0}\" with ".format(l).encode("utf-8"))
                 before = l
                 l = re.sub("&#?x?" + s.split("'")[1] + ";", "", before)
                 if l == before:
                     raise e
-                sys.stderr.write(u"\"{0}\"\n".format(l).encode("utf-8"))
             else:
                 raise e
     sys.stdout.write(l.encode("utf-8"))
