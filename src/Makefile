@@ -7,6 +7,7 @@ CPPFLAGS = -Wall -Wno-unknown-pragmas -Wno-long-long -Wno-variadic-macros \
 		   -pedantic \
 		   -Ilibs \
 		   -Wno-format \
+		   -Ishash/src \
 		   -g0 -O3
 CFLAGS = $(CPPFLAGS) -std=gnu99
 
@@ -17,7 +18,7 @@ CPPFLAGS += $(TEXTCAT_OPT)
 all: build bin
 	@echo Everything is ready
 
-build: $(HTML_SCRIPTS) get_htmls_from_wire sentencefilter textcatfilter docfilter dupfilter
+build: $(HTML_SCRIPTS) get_htmls_from_wire sentencefilter textcatfilter docfilter dupfilter neardupfilter
 	@echo Building..
 
 bin: $(BIN_DIR) build
@@ -31,7 +32,7 @@ bin: $(BIN_DIR) build
 	cp split-sentences.perl $(BIN_DIR)/
 	mv sentencefilter $(BIN_DIR)/
 	mv textcatfilter $(BIN_DIR)/
-	mv docfilter dupfilter $(BIN_DIR)/
+	mv docfilter dupfilter neardupfilter $(BIN_DIR)/
 	cp charfix/ngrams.py charfix/get_susp_chars.py charfix/similar.py charfix/simple_replacer.py $(BIN_DIR)/
 
 clean:
@@ -46,8 +47,14 @@ clean:
 	rm -f $(BIN_DIR)/textcatfilter
 	rm -f $(BIN_DIR)/docfilter
 	rm -f $(BIN_DIR)/dupfilter
+	rm -f $(BIN_DIR)/neardupfilter
+	cd shash/src; make clean
 	rm -f $(BIN_DIR)/ngrams.py $(BIN_DIR)/get_susp_chars.py $(BIN_DIR)/similar.py $(BIN_DIR)/simple_replacer.py
 	@echo Not removing splitcode. Remove by hand if really needed
+
+simhash:
+	if [ ! -e shash ]; then git clone https://github.com/vilda/shash.git; fi
+	cd shash/src; make
 
 $(BIN_DIR):
 	mkdir $(BIN_DIR)
@@ -91,6 +98,10 @@ dupfilter: dupfilter.o splitcode.h
 textcatfilter: textcatfilter.o splitcode.h
 	$(CCPP) -o $@ textcatfilter.o $(TEXTCAT_LIB_OPT)
 	rm textcatfilter.o
+
+neardupfilter: neardupfilter.o splitcode.h simhash
+	$(CCPP) -o $@ neardupfilter.o shash/src/simiw.o shash/src/lookup3.o
+	rm neardupfilter.o
 
 splitcode.h: makesplitcode.sh 
 	@echo Creating split code...
