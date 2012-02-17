@@ -7,6 +7,7 @@ Dependencies:
 - gcc
 - flex
 - libtextcat
+  - http://software.wise-guys.nl/libtextcat/
   - WARNING: libtextcat unfortunately uses confidence parameter as predefined,
     and it cannot be changed in runtime, we created a little patch that does the
     work so before compiling and installing libtextcat, please apply our patch
