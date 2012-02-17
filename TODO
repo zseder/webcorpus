@@ -1,4 +1,5 @@
 - near duplicate detection
+  - baseline: shift-window-based hash with simple threshold
 - boilerplate code detection
 - dependency checker script (instead of configure)
 - smart detection of wrong characters: "u with circumflex" replaced by double accent
