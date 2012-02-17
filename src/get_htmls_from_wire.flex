@@ -8,31 +8,45 @@
 %x HTML BODY
 %{
 	#include "splitcode.h"
-    int was_html = 0;
     long docid = 0;
+    int was_body;
+
+    void enddoc() {
+        printf("</html>\n");
+        printf("DOCEND %s %d\n", SPLITCODE, docid);
+        was_body = 0;
+    }
+    void startdoc() {
+        printf("DOCSTART %s %d\n", SPLITCODE, ++docid);
+        printf("<html>");
+    }
 %}
 
 %%
-<INITIAL>"<body>" {
-    docid++;
-    printf("DOCSTART %s %d\n", SPLITCODE, docid);
-    printf("<html><body>");
-    was_html = 0;
-    BEGIN(HTML);
-}
-<INITIAL>"<html>" {
-    docid++;
-    printf("DOCSTART %s %d\n", SPLITCODE, docid);
-    printf("<html>");
-    was_html = 1;
+<INITIAL,HTML>"<html>" {
+    if (YYSTATE == HTML) {
+       enddoc(); 
+    }
+    startdoc();
     BEGIN(HTML);
 }
 
-<INITIAL>"<head>" {
-    docid++;
-    printf("DOCSTART %s %d\n", SPLITCODE, docid);
-    printf("<html><head>");
-    was_html = 0;
+<INITIAL,HTML>"<head>" {
+    if (YYSTATE == HTML) {
+       enddoc(); 
+    }
+    startdoc();
+    printf("<head>");
+    BEGIN(HTML);
+}
+
+<INITIAL,HTML>"<body>" {
+    if (YYSTATE == HTML) {
+       enddoc(); 
+    }
+    startdoc();
+    printf("<body>");
+    was_body = 1;
     BEGIN(HTML);
 }
 
@@ -40,20 +54,17 @@
 
 <HTML>"</body>" {
     printf("</body>");
-    if(!was_html) {
-        printf("</html>\n");
-        printf("DOCEND %s %d\n", SPLITCODE, docid);
-        BEGIN(0);
-    }
+    enddoc();
+    BEGIN(0);
 }
 
+    /* this is just error handling, </body> should come always first*/
 <HTML>"</html>" {
-    if(was_html) {
-        printf("</html>\n");
-        printf("DOCEND %s\n", SPLITCODE);
-        was_html = 0;
-        BEGIN(0);
+    if(was_body) {
+        printf("</body>");
     }
+    enddoc();
+    BEGIN(0);
 }
 
     /*<CONTENT>(.|\n) {
