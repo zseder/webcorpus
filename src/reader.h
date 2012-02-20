@@ -41,8 +41,11 @@ int get_doc(FILE* f, Doc* doc)
         }
         else
         {
-            if (strlen(buf) >= BUFSIZ -1)
+            int l = strlen(buf);
+            if (l >= BUFSIZ -1)
                 cerr << "Very long line with BUFSIZ=" << BUFSIZ << " skipped." <<endl;
+            if (l == 1)
+                continue;
             doc->push_back(buf);
         }
 	}
