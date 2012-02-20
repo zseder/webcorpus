@@ -1,86 +1,21 @@
-#include <iostream>
-#include <cstdio>
-#include <cstring>
-
-#include "splitcode.h"
-
-#define MAX_STR_LEN	512
+#include "reader.h"
 #define MIN_LINES	4 
 
 using namespace std;
 
-enum
-{
-	INITIAL = 0,
-	CONTENT,
-	PASSED
-};
-
 int main(int argc, char **argv)
 {
-	int state = INITIAL;
-	unsigned int lines = 0;
-
-	char header[MAX_STR_LEN];
-	char footer[MAX_STR_LEN];
-
-	char buf[BUFSIZ];
-	char linebuf[MIN_LINES][BUFSIZ];
-	
-	sprintf(header, "DOCSTART %s", SPLITCODE);
-	sprintf(footer, "DOCEND %s", SPLITCODE);
-  
-	// get lines until eof
-	while(fgets(buf, BUFSIZ, stdin))
+    Doc doc;
+	while(get_doc(stdin, &doc) > 0)
 	{
-		// jump over the metadata
-		if(state == INITIAL)
-		{
-			// if content comes
-			if(strncmp(buf, header, SPLITCODELEN + 9) == 0)
-			{
-				lines = 0;
-
-				strncpy(linebuf[lines], buf, sizeof(linebuf[lines]));
-				lines++;
-
-				state = CONTENT;
-			}
-		}
-		// parse content
-		else
-		{
-			// check for the end of content
-			if(strncmp(buf, footer, SPLITCODELEN + 7) == 0)
-			{
-				// if any content was written then
-				// write the closing tag
-				if(state == PASSED)
-				{
-					cout << buf;
-				}
-
-				state = INITIAL;
-			}
-			else if(state == PASSED)
-			{
-			    cout << buf;
-			}
-			else if(lines < MIN_LINES)
-			{
-				strncpy(linebuf[lines], buf, sizeof(linebuf[lines]));
-				lines++;
-			}
-			else
-			{
-			    for(int i = 0; i < MIN_LINES; i++)
-					cout << linebuf[i];
-
-			    cout << buf;
-			    state = PASSED;
-			}
-		}
+        // MIN_LINES + header + footer
+        if (doc.size() >= MIN_LINES + 2)
+        {
+            Doc::iterator it;
+            for(it = doc.begin(); it != doc.end(); it++)
+                cout << *it;
+        }
+        doc.clear();
 	}
-
 	return 0;
 }
