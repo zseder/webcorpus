@@ -4,11 +4,15 @@ SRC_DIR = ../src
 # Dictionaries
 define DICTS
 polish:/home/zseder/Sandbox/HunspellDictionaries/Polish/pl_PL
-finnish:/home/zseder/Sandbox/HunspellDictionaries/Polish/pl_PL
+spanish:/home/zseder/Sandbox/HunspellDictionaries/Spanish/es_ES
 endef
 
 TEXTCAT_CONFIG = /home/zseder/Sandbox/textcat/libtextcat-2.2/langclass/conf.txt
-TEXTCAT_CONF_LIMIT = 1.05
+TEXTCAT_CONF_LIMIT = 1.01
+
+HUNSPELL_RATIO_LIMIT = 0.9
+
+NGRAM_LEN = 5
 
 #all: $(OUTS)
 #	echo Done
@@ -28,29 +32,13 @@ TEXTCAT_CONF_LIMIT = 1.05
 	cat $< | $(BIN_DIR)/split-sentences.perl -d $(SRC_DIR) | grep -v "^$$" | grep -v "^<[pP]>$$" | $(BIN_DIR)/sentencefilter > $@
 
 %.langfiltered: %.senfiltered
-	lang=`basename $< .senfiltered`;cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@
+	@#lang=`basename $< .senfiltered`;cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@
+	lang=`basename $< .senfiltered`;\
+	   dict=`echo $(DICTS) | grep $${lang} | cut -f2 -d":"`; \
+	   cat $< | $(BIN_DIR)/hunspellfilter $${dict}.aff $${dict}.dic $(HUNSPELL_RATIO_LIMIT) 2>$${lang}.bad > $@
 	
 %.dedup: %.langfiltered
 	cat $< | $(BIN_DIR)/docfilter | $(BIN_DIR)/dupfilter > $@
-
-%._susp_chars: %.dedup %.bad
-	python $(BIN_DIR)/ngrams.py $*.bad 3 > $*.bad.ngrams
-	python $(BIN_DIR)/ngrams.py $*.dedup 3 > $*.good.ngrams
-	python $(BIN_DIR)/get_susp_chars.py $*.good.ngrams $*.bad.ngrams > $@
-	@echo "Choosing suspicious characters from candidates (_susp_chars) has to be done manually"
-
-%.susp_chars: 
-	@echo "Choosing suspicious characters from candidates (_susp_chars) has to be done manually"
-
-%._similar: %.susp_chars %.bad.ngrams %.good.ngrams
-	python $(BIN_DIR)/similar.py $*.good.ngrams $*.bad.ngrams $*.susp_chars > $@
-	rm $*.bad.ngrams $*.good.ngrams
-
-%.similar: %._similar
-	@echo "Choosing similar character pairs (to be replaced) from candidates (_similar) has to be done manually"
-
-%.susp_chars_replaced: %.similar %.senfiltered
-	cat $*.senfiltered | python $(BIN_DIR)/simple_replacer.py $*.similar > $@
 
 %.tok: %.dedup
 	cat $< | $(BIN_DIR)/tokenizer.pl > $@
