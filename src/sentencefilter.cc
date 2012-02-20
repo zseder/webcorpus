@@ -5,77 +5,58 @@
  *   was a good sentence, see (1)
  *
 **/
-#include <iostream>
-#include <cstdio>
-#include <cstring>
+#include <cstdlib>
 
-#include "splitcode.h"
-
-#define MAX_STR_LEN			512
+#include "reader.h"
 
 using namespace std;
 
 enum
 {
-	INITIAL = 0,
-	CONTENT,
 	GOODSENTENCE,
 	BADSENTENCE
 };
 
 int main(int argc, char **argv)
 {
-	int state = INITIAL;
-
-	char header[MAX_STR_LEN];
-	char footer[MAX_STR_LEN];
-	char buf[BUFSIZ];
-	char *ch;
-	
-	sprintf(header, "DOCSTART %s", SPLITCODE);
-	sprintf(footer, "DOCEND %s", SPLITCODE);
-
-	// get lines until eof
-	while(fgets(buf, BUFSIZ, stdin))
+    Doc doc;
+    char* ch;
+	while(get_doc(stdin, &doc)>0)
 	{
-		if(state == INITIAL)
-		{
-            // if a header came, we except content from now on
-			if(strncmp(buf, header, SPLITCODELEN + 9) == 0)
-			{
-				state = CONTENT;
-				cout << buf;
-			}
+        int state = BADSENTENCE;
+        cout << doc[0];
+        unsigned int line_num;
+        for(line_num = 1; line_num != doc.size() - 1; line_num++)
+        {
+            const string& line = doc[line_num];
+            char* cstr = (char*)malloc((line.size()+1)*sizeof(char));
+            if(!cstr)
+            {
+                cerr << "Malloc error!\n";
+                cerr << "Size: " << (line.size()+1)*sizeof(char) << endl;
+                exit(-1);
+            }
+            strcpy(cstr, line.c_str());
+            // sentence is good if last char before line end is [.:] and there were no [.:] before
+            if((ch = strpbrk(cstr, ".:")) != NULL && *(ch+1) == '\n')
+            {
+                state = GOODSENTENCE;
+                cout << cstr;
+            }
+            // sentence is also good if there was a good sentence before, and if the last char before line end is [!?] and there were no [!?] before
+            else if(state == GOODSENTENCE && (ch = strpbrk(cstr, "!?")) != NULL && *(ch+1) == '\n')
+            {
+                state = BADSENTENCE;
+                cout << cstr;
+            }
+            else
+            {
+                state = BADSENTENCE;
+            }
+            free(cstr);
 		}
-		// parse content
-		else
-		{
-			// check for the end of content
-			if(strncmp(buf, footer, SPLITCODELEN + 7) == 0)
-			{
-				state = INITIAL;
-				cout << buf;
-			}
-			else
-			{
-				// sentence is good if last char before line end is [.:] and there were no [.:] before
-				if((ch = strpbrk(buf, ".:")) != NULL && *(ch+1) == '\n')
-				{
-					state = GOODSENTENCE;
-					cout << buf;
-				}
-				// sentence is also good if there was a good sentence before, and if the last char before line end is [!?] and there were no [!?] before
-				else if(state == GOODSENTENCE && (ch = strpbrk(buf, "!?")) != NULL && *(ch+1) == '\n')
-				{
-					state = BADSENTENCE;
-					cout << buf;
-				}
-				else
-				{
-					state = BADSENTENCE;
-				}
-			}
-		}
+        cout << doc[doc.size() - 1];
+        doc.clear();
 	}
 	return 0;
 }

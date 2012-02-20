@@ -53,7 +53,7 @@ $(FLEX_BINS): splitcode.h $(FLEX_SRC)
 	rm lex.yy.c
 
 %.o: %.cc
-	$(CCPP) -c $(CPPFLAGS) -o $@ $<
+	$(CCPP) -c $(CPPFLAGS) -o $@ -g $<
 
 sentencefilter docfilter dupfilter: sentencefilter.o splitcode.h sentencefilter.o docfilter.o dupfilter.o
 	$(CCPP) -o $@ $@.o
