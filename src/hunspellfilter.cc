@@ -73,7 +73,6 @@ int main(int argc, char **argv)
                 word = strtok(NULL, " \n");
             }
         }
-        cout << good << " " << bad << endl;
         if (float(good)/float(good+bad) >= confidence_limit)
         {
             Doc::iterator it;
