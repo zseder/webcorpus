@@ -18,7 +18,8 @@ Hash hash( const string& s, Hash context=0 )
 Hash hash( const Doc& d )
 {
     Hash h = 0;
-    for ( size_t i=0; i<d.size(); ++i )
+    // skipping header and footer
+    for ( size_t i=1; i<d.size()-1; ++i )
         h = hash( d[i], h );
     return h;
 }
