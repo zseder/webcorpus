@@ -1,11 +1,12 @@
-- boilerplate code detection
-- dependency checker script (instead of configure)
 - smart detection of wrong characters: "u with circumflex" replaced by double accent
   - no need, but clean_wire_encoding should be implemented in a way to
     detect wrong encodings if the error is with sites, who were handled
     as non-utf-8 (LATINx, windows-125x, etc.) even though they were, and so
     with two iconv this can be fixed!
+- neardupfilter implementation (half done)
+- boilerplate code detection
 - sentence-split.perl should be reimplemented in flex (check out huntoken)
 - tokenizer.perl should be reimplemented in flex (check out huntoken)
 - html_entity_replace.py could be implemented in flex or cc also to be faster
   HTMLParser.unescape() implementation helps a lot (2.6+)
+- dependency checker script (instead of configure)
