@@ -3,9 +3,8 @@
 # Sample Tokenizer
 # written by Josh Schroeder, based on code by Philipp Koehn
 
-# Daniel Varga : I commented out utf8 mode. For English mode, this should cause no problems.
-binmode(STDIN, ":utf8");
-binmode(STDOUT, ":utf8");
+binmode(STDIN, ":encoding(utf8)");
+binmode(STDOUT, ":encoding(utf8)");
 
 use strict;
 
