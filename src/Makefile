@@ -2,7 +2,7 @@ BIN_DIR = ../bin
 
 CC = gcc
 CCPP = g++
-CPPFLAGS = -Wall -pedantic -Wno-format -Ishash/src -g0 -O3
+CPPFLAGS = -Wall -pedantic -Wno-format -Ishash/src -O3
 
 TEXTCAT_OPT = -I/home/zseder/Sandbox/textcat/libtextcat-2.2/src
 TEXTCAT_LIB_OPT =-L/home/zseder/.local/lib -ltextcat -static
@@ -28,10 +28,12 @@ bin: $(BIN_DIR) build
 	mv $(CPP_BINS) $(BIN_DIR)
 	if [ -e splitcode.py ]; then mv splitcode.py $(BIN_DIR)/; fi
 	cp split-sentences.perl $(BIN_DIR)/
+	cp tokenizer.pl $(BIN_DIR)/
 
 clean:
 	for f in $(FLEX_BINS) $(PYTHON_SCRIPTS) $(CPP_BINS); do rm -f $(BIN_DIR)/$$f; done
 	rm -f $(BIN_DIR)/split-sentences.perl
+	rm -f $(BIN_DIR)/tokenizer.pl
 	rm -f $(BIN_DIR)/*pyc
 	cd shash/src; make clean
 	@# leftovers
@@ -68,7 +70,7 @@ hunspellfilter: hunspellfilter.o splitcode.h
 	rm hunspellfilter.o
 
 neardupfilter: neardupfilter.o splitcode.h simhash
-	$(CCPP) -o $@ neardupfilter.o shash/src/simiw.o shash/src/lookup3.o
+	$(CCPP) -o $@ neardupfilter.o shash/src/simiw.o shash/src/lookup3.o shash/src/simi.o
 	rm neardupfilter.o
 
 splitcode.h: makesplitcode.sh 
