@@ -16,4 +16,6 @@ Dependencies:
       that contains original libtextcat-2.2; or
     - patch -p2 < /path/to/libtextcat-2.2.patch # while being in the actual
       libtextcat-2.2 directory
+- libhunspell
+  - we only used libhunspell-1.3 for testing
 
