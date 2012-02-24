@@ -1,0 +1,5 @@
+this data is extracted from ftp://ftp.unicode.org/Public/UNIDATA/UnicodeData.txt
+latin_capital_utf8: latin capital letters encoded in utf-8
+latin_small_utf8: latin small letters encoded in utf-8
+latin_capital_utf8_hex: latin capital letters in utf-8 hex code
+latin_small_utf8_hex: latin small letters encoded in utf8 hex code
