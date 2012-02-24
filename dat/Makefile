@@ -30,7 +30,8 @@ NGRAM_LEN = 5
 	cat $< | $(BIN_DIR)/htmldetag | $(BIN_DIR)/htmlformat | python $(BIN_DIR)/html_entity_replace.py > $@
 
 %.senfiltered: %.parsed
-	cat $< | $(BIN_DIR)/split-sentences.perl -d $(SRC_DIR) | grep -v "^$$" | grep -v "^<[pP]>$$" | $(BIN_DIR)/sentencefilter > $@
+	#cat $< | $(BIN_DIR)/split-sentences.perl -d $(SRC_DIR) | grep -v "^$$" | grep -v "^<[pP]>$$" | $(BIN_DIR)/sentencefilter > $@
+	cat $< | $(BIN_DIR)/sentence_tokenizer | grep -v "^$$" | grep -v "^<[pP]>$$" | sed "s/^\s*//g" | sed "s/\s*$//g" | $(BIN_DIR)/sentencefilter > $@
 
 %.langfiltered: %.senfiltered
 	@#lang=`basename $< .senfiltered`;cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@

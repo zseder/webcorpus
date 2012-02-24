@@ -1,4 +1,5 @@
 BIN_DIR = ../bin
+RES_DIR = ../res
 
 CC = gcc
 CCPP = g++
@@ -18,7 +19,7 @@ CPP_BINS = sentencefilter textcatfilter hunspellfilter docfilter dupfilter neard
 all: build bin
 	@echo Everything is ready
 
-build: $(FLEX_BINS) $(CPP_BINS) 
+build: $(FLEX_BINS) $(CPP_BINS) sentence_tokenizer 
 	@echo Building complete.
 
 bin: $(BIN_DIR) build
@@ -27,7 +28,8 @@ bin: $(BIN_DIR) build
 	cp $(PYTHON_SCRIPTS) $(BIN_DIR)
 	mv $(CPP_BINS) $(BIN_DIR)
 	if [ -e splitcode.py ]; then mv splitcode.py $(BIN_DIR)/; fi
-	cp split-sentences.perl $(BIN_DIR)/
+	#cp split-sentences.perl $(BIN_DIR)/
+	mv sentence_tokenizer $(BIN_DIR)/
 	cp tokenizer.pl $(BIN_DIR)/
 
 clean:
@@ -53,6 +55,13 @@ $(FLEX_BINS): splitcode.h $(FLEX_SRC)
 	flex -i `basename $@.flex`
 	gcc -lfl lex.yy.c -o $@
 	rm lex.yy.c
+
+sentence_tokenizer: sentence_tokenizer.flex.template
+	python flex_utf8_chardef_replacer.py $(RES_DIR)/latin_small_utf8_hex $(RES_DIR)/latin_capital_utf8_hex $< > $@.flex
+	flex $@.flex
+	gcc -lfl lex.yy.c -o $@
+	rm lex.yy.c
+	rm $@.flex
 
 %.o: %.cc
 	$(CCPP) -c $(CPPFLAGS) -o $@ -g $<

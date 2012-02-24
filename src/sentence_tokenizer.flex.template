@@ -1,0 +1,132 @@
+%option noyywrap
+
+%x AFTER_NUM_STATE
+%x IN_SEN_STATE ENDOF_SEN_STATE AFTER_FINAL_CLOSING_STATE
+
+%{
+    #include "splitcode.h"
+    int was_space = 0;
+%}
+
+INSERT_CHARACTER_DEFS
+ISNUM [0-9]
+ISALNUM {LATIN_CHAR}|{ISNUM}
+ISLOWER {LATIN_CHARACTER_SMALL}
+ISUPPER {LATIN_CHARACTER_CAPITAL}
+
+NONBREAKING_PREFIX (Mr.)
+
+SPACE [ 	\240]
+PERIOD "."
+
+    /* following two defs are extracted from perls Pi.pl and Pf.pl */
+PUNCT_FINAL (\x00\xbb|\x20\x19|\x20\x1d|\x20\x3a|\x2e\x03|\x2e\x05|\x2e\x0a|\x2e\x0d|\x2e\x1d|\x2e\x21|\xe2\x80\x9d)
+PUNCT_INIT (\x00\xab|\x20\x18|\x20\x1b|\x20\x1c|\x20\x1f|\x20\x39|\x2e\x02|\x2e\x04|\x2e\x09|\x2e\x0c|\x2e\x1c|\x2e\x20|\xe2\x80\x9c)
+
+NONPERIOD_ENDOF_SEN [!?]
+
+OPENING_SIGN [\'\"\(\[]
+CLOSING_SIGN [\'\"\)\]]
+
+STARTOF_SEN ((\xc2\xbf|\xc2\xa1|{PUNCT_INIT}|{OPENING_SIGN})?{ISUPPER})|{ISNUM}
+
+ENDOF_SEN ({PERIOD}|{NONPERIOD_ENDOF_SEN})+
+FINAL_CLOSING {PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN}
+
+%%
+
+<INITIAL,AFTER_NUM_STATE,IN_SEN_STATE,ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>"DOCSTART "[0-9]+" "[0-9]+"\n" {		
+		printf(yytext);
+        BEGIN(IN_SEN_STATE);
+}
+<INITIAL,AFTER_NUM_STATE,IN_SEN_STATE,ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>"DOCEND "[0-9]+" "[0-9]+"\n" {		
+		printf(yytext);
+}
+
+    /* handle periods around numbers */
+<IN_SEN_STATE>{ISNUM}+ {
+    printf("%s", yytext);
+    BEGIN(AFTER_NUM_STATE);
+}
+<AFTER_NUM_STATE>{PERIOD}({ISNUM}|"-")+ {
+    printf(yytext);
+    BEGIN(AFTER_NUM_STATE);
+}
+<AFTER_NUM_STATE>{PERIOD}+ {
+    printf("%s", yytext);
+    BEGIN(ENDOF_SEN_STATE);
+}
+<AFTER_NUM_STATE>. {
+    printf("%s", yytext);
+    BEGIN(IN_SEN_STATE);
+}
+
+
+    /* Now tokenize at PERIODS */
+<IN_SEN_STATE>{PERIOD}(({ISUPPER}|"-")+{PERIOD})+ {
+    printf(yytext);
+}
+<IN_SEN_STATE>{NONBREAKING_PREFIX}{PERIOD}+ {
+    printf(yytext);
+}
+<IN_SEN_STATE>{ISLOWER}{PERIOD}{ISLOWER} {
+    printf("%s", yytext);
+}
+<IN_SEN_STATE>{PERIOD}+ {
+    printf("%s", yytext);
+    BEGIN(ENDOF_SEN_STATE);
+}
+
+    /* "?!.:" end of sentence markers followed by CLOSING_SIGN and OPENING_SIGN and after that, sentence starters. 
+       the main reason of this four done one by one is that we want to split between end sentence and start sentence
+       only if there were at least one closing sign or opening sign between period/!?: and Capital sentence starter.
+       The simple case of tokenizing period->space->capital, without closing and opening signs are handled differently
+    */
+<IN_SEN_STATE>{ENDOF_SEN} {
+    printf("%s", yytext);
+    BEGIN(ENDOF_SEN_STATE);
+}
+<IN_SEN_STATE>. {
+    printf("%s", yytext);
+}
+<ENDOF_SEN_STATE>{SPACE}+ {
+    printf("%s", yytext);
+    was_space = 1;
+}
+<ENDOF_SEN_STATE>{STARTOF_SEN} {
+    if (was_space) {
+        printf("\n%s", yytext);
+        was_space = 0;
+    }
+    else {
+        printf(yytext);
+    }
+    BEGIN(IN_SEN_STATE);
+}
+<ENDOF_SEN_STATE>{FINAL_CLOSING}+ {
+    printf("%s", yytext);
+    BEGIN(AFTER_FINAL_CLOSING_STATE);
+}
+<AFTER_FINAL_CLOSING_STATE>{STARTOF_SEN} {
+    if (was_space) 
+    {
+        printf("\n%s", yytext);
+        was_space = 0;
+        BEGIN(IN_SEN_STATE);
+    }
+    else {
+        printf(yytext);
+    }
+    BEGIN(IN_SEN_STATE);
+}
+<AFTER_FINAL_CLOSING_STATE>{SPACE} {
+    was_space = 1;
+    printf(yytext);
+}
+<ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>. {
+    // else: continue without newline
+    printf("%s", yytext);
+    was_space = 0;
+    BEGIN(IN_SEN_STATE);
+}
+
