@@ -180,7 +180,10 @@ void add_freq(int* freqs, const char* input)
         {
             freqs[input[i]*256 + input[i+1]] += 1;
         }
-        i += len;
+        if (len > 1)
+            i += len;
+        else
+            i += 1;
     }
 }
 
@@ -196,6 +199,7 @@ int main(int argc, char **argv)
 	while(get_doc(f, &doc) > 0)
 	{
         unsigned int line_num;
+        fprintf(stderr, doc[0].c_str());
         for(line_num = 1; line_num != doc.size() - 1; line_num++)
         {
             const string& line = doc[line_num];
