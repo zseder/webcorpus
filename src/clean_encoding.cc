@@ -80,7 +80,7 @@ int main(int argc, char **argv)
                 // if tie, we choose first (they always give the same result)
                 printf(doc[0].c_str());
 
-                for(int line_num = 1; line_num<doc.size()-1; line_num++)
+                for(unsigned int line_num = 1; line_num<doc.size()-1; line_num++)
                 {
                     char* result = (char*) calloc(doc[line_num].size(), sizeof(char));
                     fix_encoding(doc[line_num].c_str(), &freq[0], &scores[0], iconvs, i, result);
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
             }
             else if (max == 0)
             {
-                for (int line_num = 0; line_num < doc.size(); line_num++)
+                for (unsigned int line_num = 0; line_num < doc.size(); line_num++)
                     printf(doc[line_num].c_str());
                 break;
 

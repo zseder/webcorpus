@@ -65,10 +65,10 @@ int count_or_replace_with_iconv(iconv_t myconv, const char* input, size_t first,
     size_t second_ol = 1;
 
     // calling iconv
-    int res1 = iconv(myconv, &first_in_ptr, &first_l, &first_out_ptr, &first_ol);
+    iconv(myconv, &first_in_ptr, &first_l, &first_out_ptr, &first_ol);
     if (first_ol == 1)
         return 0;
-    int res2 = iconv(myconv, &second_in_ptr, &second_l, &second_out_ptr, &second_ol);
+    iconv(myconv, &second_in_ptr, &second_l, &second_out_ptr, &second_ol);
     if (second_ol == 1)
         return 0;
 
@@ -116,12 +116,13 @@ int count_or_replace_with_iconv(iconv_t myconv, const char* input, size_t first,
     second_in_ptr = 0; *second_out_ptr = 0; second_out_ptr = 0;
     free(first_in_buf);
     free(second_in_buf);
+    return 0;
 }
 
 void fix_encoding(const char* input, const long freq[], int scores[], iconv_t iconvs[], int best_iconv, char* result)
 {
-    int i;
-    int l = strlen(input);
+    unsigned int i;
+    unsigned int l = strlen(input);
     int pos_in_result = 0;
     for(i=0; i < l;)
     {

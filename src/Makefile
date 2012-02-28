@@ -14,7 +14,7 @@ HUNSPELL_LIB_OPT =-lhunspell-1.3 -L/home/zseder/.local/lib -static
 FLEX_BINS = htmldetag htmlformat get_htmls_from_wire
 FLEX_SRC = htmldetag.flex htmlformat.flex get_htmls_from_wire.flex
 PYTHON_SCRIPTS = html_entity_replace.py clean_wire_encoding.py wire_to_webcorp.py
-CPP_BINS = sentencefilter textcatfilter hunspellfilter docfilter dupfilter neardupfilter
+CPP_BINS = sentencefilter textcatfilter hunspellfilter docfilter dupfilter neardupfilter clean_encoding
 
 all: build bin
 	@echo Everything is ready
@@ -64,9 +64,9 @@ sentence_tokenizer: sentence_tokenizer.flex.template
 	rm $@.flex
 
 %.o: %.cc
-	$(CCPP) -c $(CPPFLAGS) -o $@ -g $<
+	$(CCPP) -c $(CPPFLAGS) -o $@ $<
 
-sentencefilter docfilter dupfilter: sentencefilter.o splitcode.h sentencefilter.o docfilter.o dupfilter.o
+sentencefilter docfilter dupfilter clean_encoding: sentencefilter.o splitcode.h sentencefilter.o docfilter.o dupfilter.o clean_encoding.o
 	$(CCPP) -o $@ $@.o
 	rm $@.o
 
