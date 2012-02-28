@@ -72,6 +72,7 @@ int main(int argc, char **argv)
                 }
                 word = strtok(NULL, " \n");
             }
+            free(cstr);
         }
         if (float(good)/float(good+bad) >= confidence_limit)
         {
