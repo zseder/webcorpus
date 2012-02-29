@@ -7,7 +7,7 @@
 
 #include "splitcode.h"
 #define MAX_STR_LEN			512
-#define MY_BUFSIZ = 65536
+#define MY_BUFSIZ 65536
 
 using namespace std;
 typedef vector<string> Doc;
