@@ -114,7 +114,7 @@ int count_or_replace_with_iconv(iconv_t myconv, const char* input, size_t first,
     return 0;
 }
 
-void fix_encoding(const char* input, const long freq[], int scores[], iconv_t iconvs[], int best_iconv, char* result)
+void fix_utf8_encoding(const char* input, const long freq[], int scores[], iconv_t iconvs[], int best_iconv, char* result)
 {
     unsigned int i;
     unsigned int l = strlen(input);
@@ -187,3 +187,60 @@ void fix_encoding(const char* input, const long freq[], int scores[], iconv_t ic
         i += first;
     }
 }
+
+void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], char* output)
+{
+    unsigned int i;
+    unsigned int l = strlen(input);
+    int pos_in_result = 0;
+    for(i=0; i < l;)
+    {
+        unsigned char actual = (unsigned char) input[l];
+        if (actual >= 128 && actual < 192)
+        {
+            char best[2];
+            long best_score = 0;
+            //iconv
+            for(int enc_i = 0; enc_i < NUM_ENCODINGS; enc_i++)
+            {
+                char in_char[1];
+                in_char[0] = input[l];
+                char* in_ptr = in_char;
+                char new_char[6];
+                char* new_ptr = new_char;
+                size_t in_l = 1;
+                size_t out_l = 6;
+
+                iconv(iconvs[enc_i], &in_ptr, &in_l, &new_ptr, &out_l);
+                // we care about 2-byte chars right now
+                if (out_l == 4)
+                {
+                    int score = freq[256*(unsigned char)new_char[0] + (unsigned char)new_char[1]];
+                    if (score > best_score)
+                    {
+                        best_score = score;
+                        best[0] = new_char[0];
+                        best[1] = new_char[1];
+                    }
+                }
+            }
+            if (best_score > 0)
+            {
+                strncpy(&output[pos_in_result], best, 2);
+                pos_in_result += 2;
+            }
+            else
+            {
+                strncpy(&output[pos_in_result], &input[l], 1);
+                pos_in_result += 1;
+            }
+        }
+        else
+        {
+            strncpy(&output[pos_in_result], &input[l], 1);
+            pos_in_result += 1;
+        }
+    }
+}
+
+
