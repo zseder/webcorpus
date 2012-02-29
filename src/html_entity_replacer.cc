@@ -402,7 +402,7 @@ int main(int argc, char *argv[])
     Doc doc;
 	while(get_doc(stdin, &doc) > 0)
 	{
-        printf(doc[0].c_str());
+        cout << doc[0];
         for(unsigned int line_num = 1; line_num != doc.size() -1; line_num++)
         {
             const char* cstr =doc[line_num].c_str();
@@ -410,9 +410,11 @@ int main(int argc, char *argv[])
             strcpy(mystr, cstr);
 
             decode_html_entities_utf8(mystr, NULL);
-            printf(mystr);
+            cout << mystr;
+            free(mystr);
+            mystr = 0;
         }
-        printf(doc[doc.size()-1].c_str());
+        cout << doc[doc.size()-1];
         doc.clear();
 	}
 }
