@@ -34,20 +34,21 @@ int get_doc(FILE* f, Doc* doc)
             }
             doc->push_back(buf);
         }
-		// parse content
         else if(strncmp(buf, footer, SPLITCODELEN + 7) == 0)
         {
             doc->push_back(buf);
             return 1;
         }
+		// content
         else
         {
             int l = strlen(buf);
             if (l >= MY_BUFSIZ -1)
                 cerr << "Very long line with MY_BUFSIZ=" << MY_BUFSIZ << " skipped." <<endl;
-            if (l == 1)
+            else if (l == 1)
                 continue;
-            doc->push_back(buf);
+            else
+                doc->push_back(buf);
         }
 	}
 	return -1;
