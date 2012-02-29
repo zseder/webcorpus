@@ -417,7 +417,7 @@ int main(int argc, char *argv[])
             free(mystr);
             mystr = 0;
         }
-        cout << doc[doc.size()-1];
+        cout << endl << doc[doc.size()-1];
         doc.clear();
 	}
 }
