@@ -20,7 +20,6 @@ enum
 int main(int argc, char **argv)
 {
     Doc doc;
-    char* ch;
 	while(get_doc(stdin, &doc)>0)
 	{
         int state = BADSENTENCE;
@@ -37,14 +36,15 @@ int main(int argc, char **argv)
                 exit(-1);
             }
             strcpy(cstr, line.c_str());
+            int l = strlen(cstr);
             // sentence is good if last char before line end is [.:] and there were no [.:] before
-            if((ch = strpbrk(cstr, ".:")) != NULL && *(ch+1) == '\n')
+            if ( (cstr[l-2] == '.' || cstr[l-2] == ':') && cstr[l-1] == '\n')
             {
                 state = GOODSENTENCE;
                 cout << cstr;
             }
             // sentence is also good if there was a good sentence before, and if the last char before line end is [!?] and there were no [!?] before
-            else if(state == GOODSENTENCE && (ch = strpbrk(cstr, "!?")) != NULL && *(ch+1) == '\n')
+            else if ( state == GOODSENTENCE && (cstr[l-2] == '!' || cstr[l-2] == '?') && cstr[l-1] == '\n')
             {
                 state = BADSENTENCE;
                 cout << cstr;
@@ -54,6 +54,7 @@ int main(int argc, char **argv)
                 state = BADSENTENCE;
             }
             free(cstr);
+            cstr = NULL;
 		}
         cout << doc[doc.size() - 1];
         doc.clear();
