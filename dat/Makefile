@@ -27,7 +27,7 @@ NGRAM_LEN = 5
 	cat $< | python $(BIN_DIR)/wire_to_webcorp.py | python $(BIN_DIR)/clean_wire_encoding.py > $@
 
 %.parsed: %.raw
-	cat $< | $(BIN_DIR)/htmldetag | $(BIN_DIR)/htmlformat | python $(BIN_DIR)/html_entity_replace.py > $@
+	cat $< | $(BIN_DIR)/htmldetag | $(BIN_DIR)/htmlformat | $(BIN_DIR)/html_entity_replacer > $@
 
 %.senfiltered: %.parsed
 	#cat $< | $(BIN_DIR)/split-sentences.perl -d $(SRC_DIR) | grep -v "^$$" | grep -v "^<[pP]>$$" | $(BIN_DIR)/sentencefilter > $@

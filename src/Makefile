@@ -13,8 +13,8 @@ HUNSPELL_LIB_OPT =-lhunspell-1.3 -L/home/zseder/.local/lib -static
 
 FLEX_BINS = htmldetag htmlformat get_htmls_from_wire
 FLEX_SRC = htmldetag.flex htmlformat.flex get_htmls_from_wire.flex
-PYTHON_SCRIPTS = html_entity_replace.py clean_wire_encoding.py wire_to_webcorp.py
-CPP_BINS = sentencefilter textcatfilter hunspellfilter docfilter dupfilter neardupfilter clean_encoding
+PYTHON_SCRIPTS = clean_wire_encoding.py wire_to_webcorp.py
+CPP_BINS = sentencefilter textcatfilter hunspellfilter docfilter dupfilter neardupfilter clean_encoding html_entity_replacer
 
 all: build bin
 	@echo Everything is ready
@@ -35,6 +35,7 @@ bin: $(BIN_DIR) build
 clean:
 	for f in $(FLEX_BINS) $(PYTHON_SCRIPTS) $(CPP_BINS); do rm -f $(BIN_DIR)/$$f; done
 	rm -f $(BIN_DIR)/split-sentences.perl
+	rm -f $(BIN_DIR)/sentence_tokenizer
 	rm -f $(BIN_DIR)/tokenizer.pl
 	rm -f $(BIN_DIR)/*pyc
 	cd shash/src; make clean
@@ -66,7 +67,7 @@ sentence_tokenizer: sentence_tokenizer.flex.template
 %.o: %.cc
 	$(CCPP) -c $(CPPFLAGS) -o $@ $<
 
-sentencefilter docfilter dupfilter clean_encoding: sentencefilter.o splitcode.h sentencefilter.o docfilter.o dupfilter.o clean_encoding.o
+sentencefilter docfilter dupfilter clean_encoding html_entity_replacer: sentencefilter.o splitcode.h sentencefilter.o docfilter.o dupfilter.o clean_encoding.o html_entity_replacer.o
 	$(CCPP) -o $@ $@.o
 	rm $@.o
 
