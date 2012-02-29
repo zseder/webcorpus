@@ -67,10 +67,10 @@ int count_or_replace_with_iconv(iconv_t myconv, const char* input, size_t first,
     // calling iconv
     iconv(myconv, &first_in_ptr, &first_l, &first_out_ptr, &first_ol);
     free(first_in_buf);
-    first_in_ptr = 0;
+    first_in_buf = NULL;
     iconv(myconv, &second_in_ptr, &second_l, &second_out_ptr, &second_ol);
     free(second_in_buf);
-    second_in_ptr = 0;
+    second_in_buf = NULL;
     if (first_ol == 1 || second_ol == 1)
         return 0;
 
@@ -98,7 +98,7 @@ int count_or_replace_with_iconv(iconv_t myconv, const char* input, size_t first,
 
             iconv(myconv, &back_in_ptr, &back_in_l, &back_out_ptr, &back_out_l);
             free(back_in_buf);
-            *back_in_ptr = 0;
+            back_in_buf = NULL;
             if (back_out_l < 1)
             {
                 return freq[256 * first_byte + second_byte];

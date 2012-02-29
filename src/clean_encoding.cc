@@ -78,24 +78,24 @@ int main(int argc, char **argv)
             {
                 // do the replacing thing and exit then
                 // if tie, we choose first (they always give the same result)
-                printf(doc[0].c_str());
+                cout << doc[0];
 
                 for(unsigned int line_num = 1; line_num<doc.size()-1; line_num++)
                 {
-                    char* result = (char*) calloc(doc[line_num].size(), sizeof(char));
+                    char* result = (char*) calloc(doc[line_num].size() * 2, sizeof(char));
                     fix_encoding(doc[line_num].c_str(), &freq[0], &scores[0], iconvs, i, result);
-                    printf(result);
+                    cout << result;
                     free(result);
-                    result = 0;
+                    result = NULL;
                 }
 
-                printf(doc[doc.size()-1].c_str());
+                cout << doc[doc.size()-1];
                 break;
             }
             else if (max == 0)
             {
                 for (unsigned int line_num = 0; line_num < doc.size(); line_num++)
-                    printf(doc[line_num].c_str());
+                    cout << doc[line_num];
                 break;
 
             }
