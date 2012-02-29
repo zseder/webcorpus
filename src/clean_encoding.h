@@ -121,7 +121,7 @@ void fix_utf8_encoding(const char* input, const long freq[], int scores[], iconv
     int pos_in_result = 0;
     for(i=0; i < l;)
     {
-        size_t first = get_next_utf8_char_len(&input[i], (unsigned char)(l - i));
+        char first = get_next_utf8_char_len(&input[i], (unsigned char)(l - i));
         if (first == 0) 
         {
             // usually end of input
@@ -129,7 +129,7 @@ void fix_utf8_encoding(const char* input, const long freq[], int scores[], iconv
         }
         if (first > 1 && first + i < l)
         {
-            size_t second = get_next_utf8_char_len(&input[i+first], (unsigned char)(l - i - first));
+            char second = get_next_utf8_char_len(&input[i+first], (unsigned char)(l - i - first));
             if (second == 0) 
             {
                 // usually end of input
@@ -183,7 +183,10 @@ void fix_utf8_encoding(const char* input, const long freq[], int scores[], iconv
             }
         }
         else
-            printf("error happened with value of first\n");
+        {
+            // invalid utf8 char, now skip it simply
+            first = 1;
+        }
         i += first;
     }
 }
@@ -196,7 +199,15 @@ void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], 
     for(i=0; i < l;i++)
     {
         unsigned char actual = (unsigned char) input[i];
-        if (actual >= 128 && actual < 192)
+        char next_utf8_len = get_next_utf8_char_len(&input[i], (unsigned char)(l - i));
+        if (next_utf8_len != -1)
+        {
+            // valid utf8 character, we skip it, we care about invalid bytes
+            strncpy(&output[pos_in_result], &input[i], next_utf8_len);
+            pos_in_result += next_utf8_len;
+            i += next_utf8_len - 1; // only next_utf8_len-1, because for increases "i" with 1
+        }
+        else
         {
             char best[2];
             long best_score = 0;
@@ -224,6 +235,8 @@ void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], 
                     }
                 }
             }
+            cout << "ACTUAL: " << actual << endl;
+            cout << best_score << endl;
             if (best_score > 0)
             {
                 strncpy(&output[pos_in_result], best, 2);
@@ -234,11 +247,6 @@ void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], 
                 strncpy(&output[pos_in_result], &input[i], 1);
                 pos_in_result += 1;
             }
-        }
-        else
-        {
-            strncpy(&output[pos_in_result], &input[i], 1);
-            pos_in_result += 1;
         }
     }
 }

@@ -75,6 +75,7 @@ int main(int argc, char **argv)
         int max = 0;
         for (i=0; i < NUM_ENCODINGS; i++)
             max = max > scores[i] ? max : scores[i];
+        bool successful_fix_utf8 = false;
         for (i=0; i < NUM_ENCODINGS; i++)
         {
             /* if there were utf8 characters that were supposed to be 1-byte chars, fix it*/
@@ -94,23 +95,22 @@ int main(int argc, char **argv)
                 }
 
                 cout << doc[doc.size()-1];
+                successful_fix_utf8 = true;
                 break;
             }
-            else if (max == 0)
+        }
+        if (!successful_fix_utf8)
+        {
+            // check for 1byte characters, that are not valid utf-8,
+            // guess it's valid encoding and convert it to utf8
+            for (unsigned int line_num = 0; line_num < doc.size(); line_num++)
             {
-                // check for 1byte characters, that are not valid utf-8,
-                // guess it's valid encoding and convert it to utf8
-                for (unsigned int line_num = 0; line_num < doc.size(); line_num++)
-                {
-                    // utf max len supposed to be 6
-                    char* fixed = (char*) calloc(doc[line_num].size() * 6 + 1, sizeof(char));
-                    fix_1byte_encoding(doc[line_num].c_str(), &freq[0], reverse_iconvs, fixed);
-                    cout << fixed;
-                    free(fixed);
-                    fixed = NULL;
-                }
-                break;
-
+                // utf max len supposed to be 6
+                char* fixed = (char*) calloc(doc[line_num].size() * 6 + 1, sizeof(char));
+                fix_1byte_encoding(doc[line_num].c_str(), &freq[0], reverse_iconvs, fixed);
+                cout << fixed;
+                free(fixed);
+                fixed = NULL;
             }
         }
         doc.clear();
