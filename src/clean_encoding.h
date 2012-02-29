@@ -193,9 +193,9 @@ void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], 
     unsigned int i;
     unsigned int l = strlen(input);
     int pos_in_result = 0;
-    for(i=0; i < l;)
+    for(i=0; i < l;i++)
     {
-        unsigned char actual = (unsigned char) input[l];
+        unsigned char actual = (unsigned char) input[i];
         if (actual >= 128 && actual < 192)
         {
             char best[2];
@@ -204,7 +204,7 @@ void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], 
             for(int enc_i = 0; enc_i < NUM_ENCODINGS; enc_i++)
             {
                 char in_char[1];
-                in_char[0] = input[l];
+                in_char[0] = input[i];
                 char* in_ptr = in_char;
                 char new_char[6];
                 char* new_ptr = new_char;
@@ -231,13 +231,13 @@ void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], 
             }
             else
             {
-                strncpy(&output[pos_in_result], &input[l], 1);
+                strncpy(&output[pos_in_result], &input[i], 1);
                 pos_in_result += 1;
             }
         }
         else
         {
-            strncpy(&output[pos_in_result], &input[l], 1);
+            strncpy(&output[pos_in_result], &input[i], 1);
             pos_in_result += 1;
         }
     }
