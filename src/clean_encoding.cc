@@ -86,6 +86,7 @@ int main(int argc, char **argv)
                     fix_encoding(doc[line_num].c_str(), &freq[0], &scores[0], iconvs, i, result);
                     printf(result);
                     free(result);
+                    result = 0;
                 }
 
                 printf(doc[doc.size()-1].c_str());
