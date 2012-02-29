@@ -406,10 +406,13 @@ int main(int argc, char *argv[])
         for(unsigned int line_num = 1; line_num != doc.size() -1; line_num++)
         {
             const char* cstr =doc[line_num].c_str();
-            char* mystr = (char*)malloc(strlen(cstr)*sizeof(char));
-            strcpy(mystr, cstr);
-
-            decode_html_entities_utf8(mystr, NULL);
+            char* mystr = (char*)calloc(doc[line_num].size() + 1,sizeof(char));
+            if (mystr == NULL)
+            {
+                cerr << "malloc error!!!\n";
+                exit(-1);
+            }
+            decode_html_entities_utf8(mystr,cstr);
             cout << mystr;
             free(mystr);
             mystr = 0;
