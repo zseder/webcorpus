@@ -7,6 +7,7 @@
 
 #include "splitcode.h"
 #define MAX_STR_LEN			512
+#define MY_BUFSIZ = 65536
 
 using namespace std;
 typedef vector<string> Doc;
@@ -15,13 +16,13 @@ int get_doc(FILE* f, Doc* doc)
 {
 	char header[MAX_STR_LEN];
 	char footer[MAX_STR_LEN];
-	char buf[BUFSIZ];
+	char buf[MY_BUFSIZ];
 	
 	sprintf(header, "DOCSTART %s", SPLITCODE);
 	sprintf(footer, "DOCEND %s", SPLITCODE);
 
 	// get lines until eof
-	while(fgets(buf, BUFSIZ, f))
+	while(fgets(buf, MY_BUFSIZ, f))
 	{
         // if a header came, we except content from now on
         if(strncmp(buf, header, SPLITCODELEN + 9) == 0)
@@ -42,8 +43,8 @@ int get_doc(FILE* f, Doc* doc)
         else
         {
             int l = strlen(buf);
-            if (l >= BUFSIZ -1)
-                cerr << "Very long line with BUFSIZ=" << BUFSIZ << " skipped." <<endl;
+            if (l >= MY_BUFSIZ -1)
+                cerr << "Very long line with MY_BUFSIZ=" << MY_BUFSIZ << " skipped." <<endl;
             if (l == 1)
                 continue;
             doc->push_back(buf);
