@@ -1,5 +1,3 @@
 - boilerplate code detection
 - tokenizer.perl should be reimplemented in flex (check out huntoken)
-- html_entity_replace.py could be implemented in flex or cc also to be faster
-  HTMLParser.unescape() implementation helps a lot (2.6+)
 - dependency checker script (instead of configure)
