@@ -38,13 +38,13 @@ int main(int argc, char **argv)
             strcpy(cstr, line.c_str());
             int l = strlen(cstr);
             // sentence is good if last char before line end is [.:] and there were no [.:] before
-            if ( (cstr[l-2] == '.' || cstr[l-2] == ':') && cstr[l-1] == '\n')
+            if ( l >= 3 && (cstr[l-2] == '.' || cstr[l-2] == ':') && cstr[l-1] == '\n')
             {
                 state = GOODSENTENCE;
                 cout << cstr;
             }
             // sentence is also good if there was a good sentence before, and if the last char before line end is [!?] and there were no [!?] before
-            else if ( state == GOODSENTENCE && (cstr[l-2] == '!' || cstr[l-2] == '?') && cstr[l-1] == '\n')
+            else if ( state == GOODSENTENCE && l >= 3 && (cstr[l-2] == '!' || cstr[l-2] == '?') && cstr[l-1] == '\n')
             {
                 state = BADSENTENCE;
                 cout << cstr;
