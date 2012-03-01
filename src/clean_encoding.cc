@@ -45,9 +45,6 @@ int main(int argc, char **argv)
     for (i=0; i < 65536; i++)
         freq[i] = 0;
 
-    int scores[NUM_ENCODINGS];
-    for (i=0; i < NUM_ENCODINGS; i++)
-        scores[i] = 0;
 
     FILE* f = fopen(argv[1], "r");
 	while(get_doc(f, &doc) > 0)
@@ -67,6 +64,12 @@ int main(int argc, char **argv)
         reverse_iconvs[i] = iconv_open("utf-8", possible_encodings[i]);
 	while(get_doc(stdin, &doc) > 0)
 	{
+        // reset scores
+        int scores[NUM_ENCODINGS];
+        for (i=0; i < NUM_ENCODINGS; i++)
+            scores[i] = 0;
+
+        // compute scores of different encodings for utf8 fix
         Doc::iterator it;
         for(it = doc.begin(); it != doc.end(); it++)
         {
@@ -75,7 +78,6 @@ int main(int argc, char **argv)
         int max = 0;
         for (i=0; i < NUM_ENCODINGS; i++)
             max = max > scores[i] ? max : scores[i];
-        bool successful_fix_utf8 = false;
         for (i=0; i < NUM_ENCODINGS; i++)
         {
             /* if there were utf8 characters that were supposed to be 1-byte chars, fix it*/
@@ -95,11 +97,10 @@ int main(int argc, char **argv)
                 }
 
                 cout << doc[doc.size()-1];
-                successful_fix_utf8 = true;
                 break;
             }
         }
-        if (!successful_fix_utf8)
+        if (max == 0)
         {
             // check for 1byte characters, that are not valid utf-8,
             // guess it's valid encoding and convert it to utf8
