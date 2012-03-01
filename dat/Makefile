@@ -34,13 +34,24 @@ BOILER_PLATE_LIMIT = 5
 
 %.langfiltered: %.senfiltered
 	@#lang=`basename $< .senfiltered`;cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@
+# HACK Next line is copied to %.clean target, if we change this, change that, too!
+	l=`basename $< .senfiltered`; 
+	    d=`for e in $(DICTS); do echo $$e; done | grep "$$l" | cut -f2 -d":"`;\
+		cat $< | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>/dev/null > $@
+
+%.cleaned: %.langfiltered %.senfiltered
+	@echo "After cleaning, we run lang filtering again"
 	l=`basename $< .senfiltered`; \
 	    d=`for e in $(DICTS); do echo $$e; done | grep "$$l" | cut -f2 -d":"`;\
-		cat $< | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>$$l.bad > $@
+# HACK Next line is copied from %.langiltered target, if we change that, change this, too!
+		cat $$l.senfiltered | $(BIN_DIR)/clean_encoding $$l.langfiltered | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>/dev/null > $@
 	
-%.dedup: %.langfiltered
+%.dedup: %.cleaned
 	cat $< | $(BIN_DIR)/dupfilter > $@
 
-%.tok: %.dedup
+%.neardedup: %.dedup
+	cat $< | $(BIN_DIR)/neardupfilter > $@
+
+%.tok: %.neardedup
 	cat $< | $(BIN_DIR)/tokenizer.pl > $@
 
