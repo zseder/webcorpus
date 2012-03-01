@@ -12,7 +12,7 @@ TEXTCAT_CONF_LIMIT = 1.01
 
 HUNSPELL_RATIO_LIMIT = 0.8
 
-NGRAM_LEN = 5
+BOILER_PLATE_LIMIT = 5
 
 #all: $(OUTS)
 #	echo Done
@@ -20,18 +20,17 @@ NGRAM_LEN = 5
 # This is for storage.raw files if something is messed up while
 # running WIRE and so data cannot be extracted with its wire-info-extract method
 %.raw: %.not_extractable_wire
-	@#cat $< | $(BIN_DIR)/get_htmls_from_wire | python $(BIN_DIR)/clean_wire_encoding.py> $@
-	cat $< | $(BIN_DIR)/get_htmls_from_wire > $@
+	cat $< | $(BIN_DIR)/get_htmls_from_wire | python $(BIN_DIR)/clean_wire_encoding.py> $@
 
 %.raw: %.wire
 	cat $< | python $(BIN_DIR)/wire_to_webcorp.py | python $(BIN_DIR)/clean_wire_encoding.py > $@
 
 %.parsed: %.raw
-	cat $< | $(BIN_DIR)/htmldetag | $(BIN_DIR)/htmlformat | $(BIN_DIR)/html_entity_replacer > $@
+	cat $< | $(BIN_DIR)/htmldetag | python boilerplatefilter.py $(BOILER_PLATE_LIMIT) | $(BIN_DIR)/htmlformat | $(BIN_DIR)/html_entity_replacer > $@
 
 %.senfiltered: %.parsed
 	#cat $< | $(BIN_DIR)/split-sentences.perl -d $(SRC_DIR) | grep -v "^$$" | grep -v "^<[pP]>$$" | $(BIN_DIR)/sentencefilter > $@
-	cat $< | $(BIN_DIR)/sentence_tokenizer | grep -v "^$$" | grep -v "^<[pP]>$$" | sed "s/^\s*//g" | sed "s/\s*$$//g" | $(BIN_DIR)/sentencefilter > $@
+	cat $< | $(BIN_DIR)/sentence_tokenizer | grep -v "^$$" | grep -v "^<[pP]>$$" | sed "s/^\s*//g" | sed "s/\s*$$//g" | $(BIN_DIR)/sentencefilter | $(BIN_DIR)/docfilter > $@
 
 %.langfiltered: %.senfiltered
 	@#lang=`basename $< .senfiltered`;cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@
@@ -40,7 +39,7 @@ NGRAM_LEN = 5
 		cat $< | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>$$l.bad > $@
 	
 %.dedup: %.langfiltered
-	cat $< | $(BIN_DIR)/docfilter | $(BIN_DIR)/dupfilter > $@
+	cat $< | $(BIN_DIR)/dupfilter > $@
 
 %.tok: %.dedup
 	cat $< | $(BIN_DIR)/tokenizer.pl > $@
