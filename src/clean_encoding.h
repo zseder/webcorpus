@@ -198,9 +198,13 @@ void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], 
     int pos_in_result = 0;
     for(i=0; i < l;i++)
     {
-        unsigned char actual = (unsigned char) input[i];
         char next_utf8_len = get_next_utf8_char_len(&input[i], (unsigned char)(l - i));
-        if (next_utf8_len != -1)
+        if (next_utf8_len == 0)
+        {
+            // skip character, its not valid and messes up data
+
+        }
+        else if (next_utf8_len > 0)
         {
             // valid utf8 character, we skip it, we care about invalid bytes
             strncpy(&output[pos_in_result], &input[i], next_utf8_len);
@@ -212,7 +216,7 @@ void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], 
             char best[2];
             long best_score = 0;
             //iconv
-            for(int enc_i = 0; enc_i < NUM_ENCODINGS; enc_i++)
+            for (int enc_i = 0; enc_i < NUM_ENCODINGS; enc_i++)
             {
                 char in_char[1];
                 in_char[0] = input[i];
@@ -235,8 +239,6 @@ void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], 
                     }
                 }
             }
-            cout << "ACTUAL: " << actual << endl;
-            cout << best_score << endl;
             if (best_score > 0)
             {
                 strncpy(&output[pos_in_result], best, 2);
