@@ -122,20 +122,15 @@ void fix_utf8_encoding(const char* input, const long freq[], int scores[], iconv
     for(i=0; i < l;)
     {
         char first = get_next_utf8_char_len(&input[i], (unsigned char)(l - i));
-        if (first == 0) 
-        {
-            // usually end of input
-            break;
-        }
         if (first > 1 && first + i < l)
         {
             char second = get_next_utf8_char_len(&input[i+first], (unsigned char)(l - i - first));
-            if (second == 0) 
+            if (second <= 0) 
             {
-                // usually end of input
-                break;
+                // we want to skip this character and we trigger this with a second=1
+                second = 1;
             }
-            if (second > 1)
+            else if (second > 1)
             {
                 if (best_iconv == -1)
                 {
