@@ -152,9 +152,16 @@ void fix_utf8_encoding(const char* input, const long freq[], int scores[], iconv
                 else
                 {
                     char new_char[2];
-                    count_or_replace_with_iconv(iconvs[best_iconv], &input[i], first, second, REPLACE, NULL, &new_char[0]);
-                    strncpy(&result[pos_in_result], new_char, 2);
-                    pos_in_result += 2;
+                    if (count_or_replace_with_iconv(iconvs[best_iconv], &input[i], first, second, REPLACE, NULL, &new_char[0]) == 1)
+                    {
+                        strncpy(&result[pos_in_result], new_char, 2);
+                        pos_in_result += 2;
+                    }
+                    else
+                    {
+                        strncpy(&result[pos_in_result], &input[i], first + second);
+                        pos_in_result += first + second;
+                    }
                 }
             }
             else
