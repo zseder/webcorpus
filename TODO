@@ -1,3 +1,5 @@
 - boilerplate code detection
+  we have an implementation right now in py, works ok, but eats up a lot of memory
+- finnish (or any non-hunspell language) language detection should be done
 - tokenizer.perl should be reimplemented in flex (check out huntoken)
 - dependency checker script (instead of configure)
