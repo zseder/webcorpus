@@ -76,25 +76,27 @@ vector<int> search_duplicates()
         for (first = bucket_it->begin(); first != bucket_it->end(); ++first)
             for (second = first + 1; second != bucket_it->end(); ++second)
             {
-                if (hamming_dist(*first, *second) <= 3)
+                if (hamming_dist(*first, *second) <= 5)
                 {
                     vector<int>::iterator id_it;
                     for (id_it = g_simhash_to_id[*first].begin(); id_it != g_simhash_to_id[*first].end(); id_it++)
                     {
                         if (id_it != g_simhash_to_id[*first].begin())
                             to_drop.push_back(*id_it);
-                        cout << *id_it << " ";
+                        //cout << *id_it << " ";
                     }
                     for (id_it = g_simhash_to_id[*second].begin(); id_it != g_simhash_to_id[*second].end(); id_it++)
                     {
                         to_drop.push_back(*id_it);
-                        cout << *id_it << " ";
+                        //cout << *id_it << " ";
                     }
-                    cout << endl;
+                    //cout << endl;
                 }
             }
     }
     sort(to_drop.begin(), to_drop.end());
+    vector<int>::iterator id_it = unique(to_drop.begin(), to_drop.end());
+    to_drop.resize( id_it - to_drop.begin() );
     return to_drop;
 }
 
@@ -129,15 +131,12 @@ int main(int argc, char **argv)
     
     fclose(input);
     input = fopen(argv[1], "r");
-
     vector<int>::iterator id_it = to_drop.begin();
     while (get_doc(input, &doc) > 0)
     {
         int id = atoi(doc[0].c_str()+SPLITCODELEN +9);
         if (id == *id_it)
-        {
             ++id_it;
-        }
         else
         {
             Doc::iterator it;
@@ -146,6 +145,7 @@ int main(int argc, char **argv)
         }
         doc.clear();
     }
+    
 
 	return 0;
 }
