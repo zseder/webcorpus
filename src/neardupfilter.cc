@@ -126,6 +126,9 @@ int main(int argc, char **argv)
     vector<int> to_drop = search_duplicates();
 
     //search_dup_dummy();
+    
+    fclose(input);
+    input = fopen(argv[1], "r");
 
     vector<int>::iterator id_it = to_drop.begin();
     while (get_doc(input, &doc) > 0)
