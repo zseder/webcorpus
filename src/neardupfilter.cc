@@ -76,7 +76,7 @@ vector<int> search_duplicates()
         for (first = bucket_it->begin(); first != bucket_it->end(); ++first)
             for (second = first + 1; second != bucket_it->end(); ++second)
             {
-                if (hamming_dist(*first, *second) <= 5)
+                if (hamming_dist(*first, *second) <= 3)
                 {
                     vector<int>::iterator id_it;
                     for (id_it = g_simhash_to_id[*first].begin(); id_it != g_simhash_to_id[*first].end(); id_it++)
