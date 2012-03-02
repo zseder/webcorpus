@@ -144,6 +144,7 @@ int main(int argc, char **argv)
             for(it = doc.begin(); it != doc.end(); it++)
                 cout << *it;
         }
+        doc.clear();
     }
 
 	return 0;
