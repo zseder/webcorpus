@@ -3,9 +3,9 @@
 # Based on Preprocessor written by Philipp Koehn
 # Changed only to detect document separator and skip running on those lines
 
-binmode(STDIN, ":encoding(utf8)");
-binmode(STDOUT, ":encoding(utf8)");
-binmode(STDERR, ":encoding(utf8)");
+binmode(STDIN, ":encoding(UTF-8)");
+binmode(STDOUT, ":encoding(UTF-8)");
+binmode(STDERR, ":encoding(UTF-8)");
 
 use FindBin qw($Bin);
 use strict;
