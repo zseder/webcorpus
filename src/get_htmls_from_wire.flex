@@ -69,7 +69,7 @@
     BEGIN(0);
 }
 
-<CONTENT>(.|\n) {
+<HTML>(.|\n) {
     if (!before_first) {printf("%s", yytext);}
 }
 
