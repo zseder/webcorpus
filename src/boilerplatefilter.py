@@ -8,8 +8,8 @@ def main():
     bound = int(sys.argv[1])
     doc = ""
     for l in sys.stdin:
-        sys.stdout.write(l)
         if l.startswith(header):
+            sys.stdout.write(l)
             if len(doc) > 0:
                 new_doc = []
                 myparagraphs = doc.split("<p>")
