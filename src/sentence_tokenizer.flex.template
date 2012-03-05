@@ -1,7 +1,7 @@
 %option noyywrap
 
 %x AFTER_NUM_STATE
-%x IN_SEN_STATE ENDOF_SEN_STATE AFTER_FINAL_CLOSING_STATE
+%x START_SEN_STATE IN_SEN_STATE ENDOF_SEN_STATE AFTER_FINAL_CLOSING_STATE
 
 %{
     #include "splitcode.h"
@@ -14,7 +14,8 @@ ISALNUM {LATIN_CHAR}|{ISNUM}
 ISLOWER {LATIN_CHARACTER_SMALL}
 ISUPPER {LATIN_CHARACTER_CAPITAL}
 
-NONBREAKING_PREFIX (Mr.)
+NONBREAKING_PREFIX_EN ("A"|"B"|"C"|"D"|"E"|"F"|"G"|"H"|"I"|"J"|"K"|"L"|"M"|"N"|"O"|"P"|"Q"|"R"|"S"|"T"|"U"|"V"|"W"|"X"|"Y"|"Z"|"Adj"|"Adm"|"Adv"|"Asst"|"Bart"|"Bldg"|"Brig"|"Bros"|"Capt"|"Cmdr"|"Col"|"Comdr"|"Con"|"Corp"|"Cpl"|"DR"|"Dr"|"Drs"|"Ens"|"Gen"|"Gov"|"Hon"|"Hr"|"Hosp"|"Insp"|"Jr"|"Lt"|"MM"|"MR"|"MRS"|"MS"|"Maj"|"Messrs"|"Mlle"|"Mme"|"Mr"|"Mrs"|"Ms"|"Msgr"|"Op"|"Ord"|"Pfc"|"Ph"|"Prof"|"Pvt"|"Rep"|"Reps"|"Res"|"Rev"|"Rt"|"Sen"|"Sens"|"Sfc"|"Sgt"|"Sr"|"St"|"Supt"|"Surg"|"v"|"vs"|"i.e"|"rev"|"e.g")
+NONBREAKING_PREFIX ({NONBREAKING_PREFIX_EN})
 
 SPACE [ 	\240]
 PERIOD "."
@@ -35,16 +36,28 @@ FINAL_CLOSING {PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN}
 
 %%
 
-<INITIAL,AFTER_NUM_STATE,IN_SEN_STATE,ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>"DOCSTART "[0-9]+" "[0-9]+"\n" {		
+<INITIAL,START_SEN_STATE,AFTER_NUM_STATE,IN_SEN_STATE,ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>"DOCSTART "[0-9]+" "[0-9]+"\n" {		
 		printf(yytext);
-        BEGIN(IN_SEN_STATE);
+        BEGIN(START_SEN_STATE);
 }
-<INITIAL,AFTER_NUM_STATE,IN_SEN_STATE,ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>"DOCEND "[0-9]+" "[0-9]+"\n" {		
+<INITIAL,START_SEN_STATE,AFTER_NUM_STATE,IN_SEN_STATE,ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>"DOCEND "[0-9]+" "[0-9]+"\n" {		
 		printf(yytext);
 }
 
+<START_SEN_STATE,AFTER_NUM_STATE,IN_SEN_STATE,ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>"\n\n" {
+    // at paragraph endings, add new line, it must be end of sentence, too
+    printf("\n");
+    BEGIN(IN_SEN_STATE);
+}
+
+<AFTER_NUM_STATE,IN_SEN_STATE>"\n" {
+    // if it cannot be an end of sentence, change newline to space and continue with same sentence
+    printf(" ");
+    BEGIN(IN_SEN_STATE);
+}
+
     /* handle periods around numbers */
-<IN_SEN_STATE>{ISNUM}+ {
+<START_SEN_STATE,IN_SEN_STATE>{ISNUM}+ {
     printf("%s", yytext);
     BEGIN(AFTER_NUM_STATE);
 }
@@ -61,13 +74,17 @@ FINAL_CLOSING {PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN}
     BEGIN(IN_SEN_STATE);
 }
 
-
     /* Now tokenize at PERIODS */
-<IN_SEN_STATE>{PERIOD}(({ISUPPER}|"-")+{PERIOD})+ {
+<IN_SEN_STATE>{SPACE}{NONBREAKING_PREFIX}{PERIOD} {
     printf(yytext);
 }
-<IN_SEN_STATE>{NONBREAKING_PREFIX}{PERIOD}+ {
+<START_SEN_STATE>{NONBREAKING_PREFIX}{PERIOD} {
     printf(yytext);
+    BEGIN(IN_SEN_STATE);
+}
+<IN_SEN_STATE>{PERIOD}(({ISUPPER}|"-")+{PERIOD})+ {
+    printf(yytext);
+    BEGIN(ENDOF_SEN_STATE);
 }
 <IN_SEN_STATE>{ISLOWER}{PERIOD}{ISLOWER} {
     printf("%s", yytext);
@@ -86,9 +103,16 @@ FINAL_CLOSING {PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN}
     printf("%s", yytext);
     BEGIN(ENDOF_SEN_STATE);
 }
-<IN_SEN_STATE>. {
+<START_SEN_STATE,IN_SEN_STATE>. {
     printf("%s", yytext);
+    BEGIN(IN_SEN_STATE);
 }
+<ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>{SPACE}*"\n"{STARTOF_SEN} {
+    // if at a possible end of sentence, there is a newline, handle it as endof sentence
+    printf(yytext);
+    BEGIN(START_SEN_STATE);
+}
+
 <ENDOF_SEN_STATE>{SPACE}+ {
     printf("%s", yytext);
     was_space = 1;
@@ -97,11 +121,12 @@ FINAL_CLOSING {PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN}
     if (was_space) {
         printf("\n%s", yytext);
         was_space = 0;
+        BEGIN(START_SEN_STATE);
     }
     else {
-        printf(yytext);
+        printf("%s", yytext);
+        BEGIN(IN_SEN_STATE);
     }
-    BEGIN(IN_SEN_STATE);
 }
 <ENDOF_SEN_STATE>{FINAL_CLOSING}+ {
     printf("%s", yytext);
@@ -112,13 +137,14 @@ FINAL_CLOSING {PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN}
     {
         printf("\n%s", yytext);
         was_space = 0;
-        BEGIN(IN_SEN_STATE);
+        BEGIN(START_SEN_STATE);
     }
     else {
         printf(yytext);
+        BEGIN(IN_SEN_STATE);
     }
-    BEGIN(IN_SEN_STATE);
 }
+
 <AFTER_FINAL_CLOSING_STATE>{SPACE} {
     was_space = 1;
     printf(yytext);
