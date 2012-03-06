@@ -5,7 +5,7 @@
  * because its storage is messed up somehow
 **/
 %option noyywrap
-%x HTML BODY
+%x HTML
 %{
 	#include "splitcode.h"
     long docid = 0;
@@ -25,7 +25,7 @@
 %}
 
 %%
-<INITIAL,HTML>"<html>" {
+<INITIAL,HTML>"<html"[^>]*">" {
     if (YYSTATE == HTML) {
        enddoc(); 
     }
@@ -33,19 +33,13 @@
     BEGIN(HTML);
 }
 
-<INITIAL,HTML>"<head>" {
-    if (YYSTATE == HTML) {
-       enddoc(); 
-    }
+<INITIAL>"<head>" {
     startdoc();
     if (!before_first) {printf("<head>");}
     BEGIN(HTML);
 }
 
-<INITIAL,HTML>"<body>" {
-    if (YYSTATE == HTML) {
-       enddoc(); 
-    }
+<INITIAL>"<body>" {
     startdoc();
     if (!before_first) {printf("<body>");}
     was_body = 1;
