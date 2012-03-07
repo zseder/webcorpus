@@ -19,45 +19,36 @@ enum
 
 int main(int argc, char **argv)
 {
-    Doc doc;
-	while(get_doc(stdin, &doc)>0)
+    Doc* doc = new Doc();
+	while(get_doc(stdin, doc) > 0)
 	{
+        cout << "DOCSTART " << SPLITCODE << " " << doc->id << endl;
         int state = BADSENTENCE;
-        cout << doc[0];
-        unsigned int line_num;
-        for(line_num = 1; line_num != doc.size() - 1; line_num++)
+        size_t pos = doc->text.find("\n", 0);
+        size_t prev_pos = 0;
+        while ( pos != string::npos)
         {
-            const string& line = doc[line_num];
-            char* cstr = (char*)malloc((line.size()+1)*sizeof(char));
-            if(!cstr)
-            {
-                cerr << "Malloc error!\n";
-                cerr << "Size: " << (line.size()+1)*sizeof(char) << endl;
-                exit(-1);
-            }
-            strcpy(cstr, line.c_str());
-            int l = strlen(cstr);
-            // sentence is good if last char before line end is [.:] and there were no [.:] before
-            if ( l >= 3 && (cstr[l-2] == '.' || cstr[l-2] == ':') && cstr[l-1] == '\n')
+            if (pos - prev_pos > 3 && (doc->text[pos-1] == '.' || doc->text[pos-1] == ':'))
             {
                 state = GOODSENTENCE;
-                cout << cstr;
+                cout << doc->text.substr(prev_pos + 1, pos - prev_pos);
             }
-            // sentence is also good if there was a good sentence before, and if the last char before line end is [!?] and there were no [!?] before
-            else if ( state == GOODSENTENCE && l >= 3 && (cstr[l-2] == '!' || cstr[l-2] == '?') && cstr[l-1] == '\n')
+            else if (state == GOODSENTENCE && pos - prev_pos > 3 && (doc->text[pos-1] == '!' || doc->text[pos-1] == '?'))
             {
                 state = BADSENTENCE;
-                cout << cstr;
+                cout << doc->text.substr(prev_pos + 1, pos - prev_pos);
             }
             else
             {
                 state = BADSENTENCE;
             }
-            free(cstr);
-            cstr = NULL;
-		}
-        cout << doc[doc.size() - 1];
-        doc.clear();
+            prev_pos = pos;
+        }
+        cout << "DOCEND " << SPLITCODE << " " << doc->id << endl;
+        delete doc;
+        doc = new Doc();
 	}
+    if (doc != NULL)
+        delete doc;
 	return 0;
 }

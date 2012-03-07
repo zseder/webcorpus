@@ -1,5 +1,5 @@
 #include <cstdio>
-#include <vector>
+#include <sstream>
 #include <string>
 #include <cstring>
 #include <iostream>
@@ -10,7 +10,11 @@
 #define MY_BUFSIZ 65536
 
 using namespace std;
-typedef vector<string> Doc;
+
+typedef struct {
+    long id;
+    string text;
+} Doc;
 
 int get_doc(FILE* f, Doc* doc)
 {
@@ -20,6 +24,7 @@ int get_doc(FILE* f, Doc* doc)
 	
 	sprintf(header, "DOCSTART %s", SPLITCODE);
 	sprintf(footer, "DOCEND %s", SPLITCODE);
+    stringstream docstream;
 
 	// get lines until eof
 	while(fgets(buf, MY_BUFSIZ, f))
@@ -27,16 +32,12 @@ int get_doc(FILE* f, Doc* doc)
         // if a header came, we except content from now on
         if(strncmp(buf, header, SPLITCODELEN + 9) == 0)
         {
-            if(doc->size() != 0)
-            {
-                cerr << "Calling get_doc with non-empty vector!";
-                exit(-1);
-            }
-            doc->push_back(buf);
+            int id = atoi(buf+SPLITCODELEN +9);
+            doc->id = id;
         }
         else if(strncmp(buf, footer, SPLITCODELEN + 7) == 0)
         {
-            doc->push_back(buf);
+            doc->text = docstream.str();
             return 1;
         }
 		// content
@@ -48,7 +49,9 @@ int get_doc(FILE* f, Doc* doc)
             else if (l == 1)
                 continue;
             else
-                doc->push_back(buf);
+            {
+                docstream << buf;
+            }
         }
 	}
 	return -1;

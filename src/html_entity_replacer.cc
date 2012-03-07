@@ -6,8 +6,6 @@
  **/
 
 
-#include "html_entity_replacer.h"
-
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
@@ -399,25 +397,24 @@ size_t decode_html_entities_utf8(char *dest, const char *src)
 
 int main(int argc, char *argv[])
 {
-    Doc doc;
-	while(get_doc(stdin, &doc) > 0)
+    Doc* doc = new Doc();
+	while(get_doc(stdin, doc) > 0)
 	{
-        cout << doc[0];
-        for(unsigned int line_num = 1; line_num != doc.size() -1; line_num++)
+        cout << "DOCSTART " << SPLITCODE << " " << doc->id << endl;
+        const char* cstr =doc->text.c_str();
+        char* mystr = (char*)calloc(doc->text.size() + 1,sizeof(char));
+        if (mystr == NULL)
         {
-            const char* cstr =doc[line_num].c_str();
-            char* mystr = (char*)calloc(doc[line_num].size() + 1,sizeof(char));
-            if (mystr == NULL)
-            {
-                cerr << "malloc error!!!\n";
-                exit(-1);
-            }
-            decode_html_entities_utf8(mystr,cstr);
-            cout << mystr;
-            free(mystr);
-            mystr = 0;
+            cerr << "malloc error!!!\n";
+            exit(-1);
         }
-        cout << endl << doc[doc.size()-1];
-        doc.clear();
+        decode_html_entities_utf8(mystr,cstr);
+        cout << mystr;
+        free(mystr);
+        mystr = 0;
+        cout << "DOCEND " << SPLITCODE << " " << doc->id << endl;
+        delete doc;
+        doc = new Doc();
 	}
+    return 0;
 }

@@ -108,22 +108,17 @@ void add_to_maps(int id, uint64_t hash)
 
 int main(int argc, char **argv)
 {
-    Doc doc;
+    Doc* doc = new Doc();
     FILE* input = fopen(argv[1], "r");
-	while (get_doc(input, &doc)>0)
+	while (get_doc(input, doc)>0)
 	{
-        stringstream docstream;
-        unsigned int line_num;
-        for(line_num = 1; line_num != doc.size() - 1; line_num++)
-            docstream << doc[line_num];
-        string docstring = docstream.str();
-        uint64_t simhash = charikar_hash64_wide(docstring.c_str(), docstring.size(), 3);
-
-        int id = atoi(doc[0].c_str()+SPLITCODELEN +9);
-        add_to_maps(id, simhash);
-
-        doc.clear();
+        uint64_t simhash = charikar_hash64_wide(doc->text.c_str(), doc->text.size(), 3);
+        add_to_maps(doc->id, simhash);
+        delete doc;
+        doc = new Doc();
 	}
+    if (doc != NULL)
+        delete doc;
 
     vector<int> to_drop = search_duplicates();
 
@@ -132,18 +127,19 @@ int main(int argc, char **argv)
     fclose(input);
     input = fopen(argv[1], "r");
     vector<int>::iterator id_it = to_drop.begin();
-    while (get_doc(input, &doc) > 0)
+    doc = new Doc();
+    while (get_doc(input, doc) > 0)
     {
-        int id = atoi(doc[0].c_str()+SPLITCODELEN +9);
-        if (id == *id_it)
+        if (doc->id == *id_it)
             ++id_it;
         else
         {
-            Doc::iterator it;
-            for(it = doc.begin(); it != doc.end(); it++)
-                cout << *it;
+            cout << "DOCSTART " << SPLITCODE << " " << doc->id << endl;
+            cout << doc->text;
+            cout << "DOCEND " << SPLITCODE << " " << doc->id << endl;
         }
-        doc.clear();
+        delete doc;
+        doc = new Doc();
     }
     
 

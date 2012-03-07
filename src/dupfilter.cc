@@ -4,9 +4,9 @@
 
 typedef long Hash;
 
-Hash hash( const string& s, Hash context=0 )
+Hash hash( const string& s )
 {
-    Hash h = context;
+    Hash h = 0;
     for ( size_t i=0; i!=s.size(); ++i )
     {
         h *= 31;
@@ -15,25 +15,16 @@ Hash hash( const string& s, Hash context=0 )
     return h;
 }
 
-Hash hash( const Doc& d )
-{
-    Hash h = 0;
-    // skipping header and footer
-    for ( size_t i=1; i<d.size()-1; ++i )
-        h = hash( d[i], h );
-    return h;
-}
-
 typedef set<Hash> Hashes;
 
 Hashes g_hashes;
 
 // Duplicate detection.
-bool process_duplicate( Doc& content )
+bool process_duplicate( Doc* doc )
 {
     Hashes& hashes = g_hashes;
     bool toWrite = true;
-    Hash h = hash(content);
+    Hash h = hash(doc->text);
     
     Hashes::iterator it;
     it = g_hashes.find(h);
@@ -45,23 +36,24 @@ bool process_duplicate( Doc& content )
     return toWrite;
 }
 
-inline bool process( Doc& content )
+inline bool process( Doc* doc )
 {
-    return process_duplicate( content );
+    return process_duplicate( doc );
 }
 
 int main(int argc, char **argv)
 {
-    Doc doc;
-	while(get_doc(stdin, &doc)>0)
+    Doc* doc = new Doc();
+	while(get_doc(stdin, doc)>0)
 	{
         if (process(doc))
         {
-            Doc::iterator it;
-            for(it = doc.begin(); it != doc.end(); it++)
-                cout << *it;
+            cout << "DOCSTART " << SPLITCODE << " " << doc->id << endl;
+            cout << doc->text;
+            cout << "DOCEND " << SPLITCODE << " " << doc->id << endl;
         }
-        doc.clear();
+        delete doc;
+        doc = new Doc();
 	}
 	return 0;
 }

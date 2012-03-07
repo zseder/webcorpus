@@ -1,3 +1,4 @@
+#include <string>
 #include "reader.h"
 #define MIN_LINES	4 
 
@@ -5,17 +6,25 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-    Doc doc;
-	while(get_doc(stdin, &doc) > 0)
+    Doc* doc = new Doc();
+	while(get_doc(stdin, doc) > 0)
 	{
-        // MIN_LINES + header + footer
-        if (doc.size() >= MIN_LINES + 2)
+        int line_num = 0;
+        size_t pos = doc->text.find("\n", 0);
+        while (pos != string::npos)
         {
-            Doc::iterator it;
-            for(it = doc.begin(); it != doc.end(); it++)
-                cout << *it;
+            line_num++;
+            if (line_num >= MIN_LINES)
+            {
+                cout << "DOCSTART " << SPLITCODE << " " << doc->id << endl;
+                cout << doc->text;
+                cout << "DOCEND " << SPLITCODE << " " << doc->id << endl;
+                break;
+            }
+            pos = doc->text.find("\n", pos+1);
         }
-        doc.clear();
+        delete doc;
+        doc = new Doc();
 	}
 	return 0;
 }
