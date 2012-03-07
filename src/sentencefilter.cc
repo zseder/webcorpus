@@ -31,12 +31,12 @@ int main(int argc, char **argv)
             if (pos - prev_pos > 3 && (doc->text[pos-1] == '.' || doc->text[pos-1] == ':'))
             {
                 state = GOODSENTENCE;
-                cout << doc->text.substr(prev_pos + 1, pos - prev_pos);
+                cout << doc->text.substr(prev_pos, pos - prev_pos + 1);
             }
             else if (state == GOODSENTENCE && pos - prev_pos > 3 && (doc->text[pos-1] == '!' || doc->text[pos-1] == '?'))
             {
                 state = BADSENTENCE;
-                cout << doc->text.substr(prev_pos + 1, pos - prev_pos);
+                cout << doc->text.substr(prev_pos, pos - prev_pos + 1);
             }
             else
             {
