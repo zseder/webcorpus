@@ -1,8 +1,8 @@
 
 #define VALID_CONT(x) (unsigned char)x <= 191 && (unsigned char)x >= 128
-#define NUM_ENCODINGS 4
+#define NUM_ENCODINGS 5
 
-const char* possible_encodings[NUM_ENCODINGS] = { "ISO-8859-1", "ISO-8859-15", "windows-1250", "windows-1252" };
+const char* possible_encodings[NUM_ENCODINGS] = { "ISO-8859-1", "ISO-8859-15", "windows-1250", "windows-1251", "windows-1252" };
 
 char get_next_utf8_char_len(const char* buf, unsigned max_left_bytes)
 {
