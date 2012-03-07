@@ -42,13 +42,12 @@ int main(int argc, char **argv)
             {
                 state = BADSENTENCE;
             }
-            prev_pos = pos;
+            prev_pos = pos+1;
+            pos = doc->text.find("\n", prev);
         }
         cout << "DOCEND " << SPLITCODE << " " << doc->id << endl;
         delete doc;
         doc = new Doc();
 	}
-    if (doc != NULL)
-        delete doc;
 	return 0;
 }
