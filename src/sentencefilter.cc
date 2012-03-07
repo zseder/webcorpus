@@ -43,7 +43,7 @@ int main(int argc, char **argv)
                 state = BADSENTENCE;
             }
             prev_pos = pos+1;
-            pos = doc->text.find("\n", prev);
+            pos = doc->text.find("\n", prev_pos);
         }
         cout << "DOCEND " << SPLITCODE << " " << doc->id << endl;
         delete doc;
