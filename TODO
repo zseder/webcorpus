@@ -1,12 +1,10 @@
 - sentence tokenizer:
-  - flex is fast, now works almost as good as perl
-    - small thing to change: after end-of-sentence punct and an "\n" we supposed
+  - small thing to change: after end-of-sentence punct and an "\n" we supposed
       a real-end-of-sentence, but it should be checked whether next character is
       sentence starter
-  - flex needs (perl would also!) abbreviations, non-breaking prefixes
+  - create non-breaking prefixes to languages by statistics based on words that end 
+    with "."
 
-- boilerplate code detection
-  we have an implementation right now in py, works ok, but eats up a lot of memory
 - finnish (or any non-hunspell language) language detection should be done
 - tokenizer.perl should be reimplemented in flex (check out huntoken)
 - dependency checker script (instead of configure)
