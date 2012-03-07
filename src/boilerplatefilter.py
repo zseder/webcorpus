@@ -10,6 +10,8 @@ def main():
     for l in sys.stdin:
         if l.startswith(header):
             sys.stdout.write(l)
+            doc = ""
+        elif l.startswith(footer):
             if len(doc) > 0:
                 new_doc = []
                 myparagraphs = doc.split("<p>")
@@ -18,9 +20,7 @@ def main():
                     paragraphs[stripped] += 1
                     if paragraphs[stripped] < bound:
                         new_doc.append(myp)
-                sys.stdout.write("<p>".join(new_doc))
-            doc = ""
-        elif l.startswith(footer):
+                sys.stdout.write("<p>".join(new_doc) + "\n")
             sys.stdout.write(l)
         else:
             doc += l
