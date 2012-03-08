@@ -4,6 +4,9 @@
       sentence starter
   - create non-breaking prefixes to languages by statistics based on words that end 
     with "."
+- clean_encoding: when cleaning utf-8 chars, one-utf8 character should be suspicious,
+  because if different 1byte encoding was supposed in wire that it was really, encoding
+  also went wrong
 
 - finnish (or any non-hunspell language) language detection should be done
 - tokenizer.perl should be reimplemented in flex (check out huntoken)
