@@ -44,7 +44,6 @@ int main(int argc, char **argv)
     for (i=0; i < 65536; i++)
         freq[i] = 0;
 
-
     FILE* f = fopen(argv[1], "r");
     Doc* doc = new Doc();
 	while(get_doc(f, doc) > 0)
@@ -60,6 +59,7 @@ int main(int argc, char **argv)
         iconvs[i] = iconv_open(possible_encodings[i], "utf-8");
     for (i=0; i < NUM_ENCODINGS; i++)
         reverse_iconvs[i] = iconv_open("utf-8", possible_encodings[i]);
+    doc = new Doc();
 	while(get_doc(stdin, doc) > 0)
 	{
         // reset scores
@@ -84,9 +84,19 @@ int main(int argc, char **argv)
 
                 char* result = (char*) calloc(doc->text.size() * 2, sizeof(char));
                 fix_utf8_encoding(doc->text.c_str(), &freq[0], &scores[0], iconvs, i, result);
-                cout << result;
+                // after done, do the 1byte fixing anyways
+                // TODO ugly, copy-pasted from "if (max == 0)"
+                char* fixed = (char*) calloc(strlen(result) * 2 + 1, sizeof(char));
+                change_utf8_char_to_more_frequent(result, &freq[0], iconvs, reverse_iconvs, fixed);
+                char* fixed_2 = (char*) calloc(strlen(fixed) * 6 + 1, sizeof(char));
+                fix_1byte_encoding(fixed, &freq[0], reverse_iconvs, fixed_2);
+                cout << fixed_2;
                 free(result);
                 result = NULL;
+                free(fixed);
+                fixed = NULL;
+                free(fixed_2);
+                fixed_2 = NULL;
 
                 cout << "DOCEND " << SPLITCODE << " " << doc->id << endl;
                 break;
@@ -96,14 +106,16 @@ int main(int argc, char **argv)
         {
             // check for 1byte characters, that are not valid utf-8,
             // guess it's valid encoding and convert it to utf8
-                // utf max len supposed to be 6
+            // utf max len supposed to be 6
+            cout << "DOCSTART " << SPLITCODE << " " << doc->id << endl;
             char* fixed = (char*) calloc(doc->text.size() * 6 + 1, sizeof(char));
             fix_1byte_encoding(doc->text.c_str(), &freq[0], reverse_iconvs, fixed);
             cout << fixed;
             free(fixed);
             fixed = NULL;
+            cout << "DOCEND " << SPLITCODE << " " << doc->id << endl;
         }
-        free(doc);
+
         delete doc;
         doc = new Doc();
 	}

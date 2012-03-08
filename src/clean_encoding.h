@@ -4,7 +4,7 @@
 
 const char* possible_encodings[NUM_ENCODINGS] = { "ISO-8859-1", "ISO-8859-15", "windows-1250", "windows-1251", "windows-1252" };
 
-char get_next_utf8_char_len(const char* buf, unsigned max_left_bytes)
+char get_next_utf8_char_len(const char* buf, int max_left_bytes)
 {
     char n = 0;
     unsigned char b0 = (unsigned char)buf[0];
@@ -43,35 +43,38 @@ char get_next_utf8_char_len(const char* buf, unsigned max_left_bytes)
 
 enum operations { COUNT, REPLACE };
 
+size_t convert_char(iconv_t myconv, const char* input_p, size_t input_l, char* outbuf, size_t out_l)
+{
+    char* in_buf = (char*) malloc((input_l + 1)*sizeof(char));
+    strncpy(in_buf, &input_p[0], input_l);
+    char* in_ptr = in_buf;
+    char* out_ptr = outbuf;
+    iconv(myconv, &in_ptr, &input_l, &out_ptr, &out_l);
+    free(in_buf);
+    in_buf = NULL;
+    return out_l;
+}
+
+/**
+ * Input contains 2 valid utf-8 characters, and this function has two operations:
+ * COUNT: based on given @myconv, returns a frequency of a 2-byte utf-8 character.
+ *        this character is created by
+ *          - converting 2 input characters to 1-byte encodings -> 2 byte
+ *          - we handle this 2 byte as a potential valid utf-8 char
+ * REPLACE: converts input with iconv and puts into @output (based on results of
+ *          previously called COUNT.
+ * */
 int count_or_replace_with_iconv(iconv_t myconv, const char* input, size_t first, size_t second, int operation, const long freq[], char* output)
 {
     // initializing arguments for iconv
     //   for first character 
-    char* first_in_buf = (char*) malloc((first)*sizeof(char));
-    strncpy(first_in_buf, &input[0], first);
-    char* first_in_ptr = first_in_buf;
-    char first_out_buf[1];
-    char* first_out_ptr = first_out_buf;
-    size_t first_l = first;
-    size_t first_ol = 1;
+    char first_out_buf[2];
+    size_t first_converted = convert_char(myconv, &input[0], first, &first_out_buf[0], 1);
 
     //   for second character 
-    char* second_in_buf = (char*) malloc(second*sizeof(char));
-    strncpy(second_in_buf, &input[first], second);
-    char* second_in_ptr = second_in_buf;
-    char second_out_buf[1];
-    char* second_out_ptr = second_out_buf;
-    size_t second_l = second;
-    size_t second_ol = 1;
-
-    // calling iconv
-    iconv(myconv, &first_in_ptr, &first_l, &first_out_ptr, &first_ol);
-    free(first_in_buf);
-    first_in_buf = NULL;
-    iconv(myconv, &second_in_ptr, &second_l, &second_out_ptr, &second_ol);
-    free(second_in_buf);
-    second_in_buf = NULL;
-    if (first_ol == 1 || second_ol == 1)
+    char second_out_buf[2];
+    size_t second_converted = convert_char(myconv, &input[0+second], second, &second_out_buf[0], 1);
+    if (first_converted == 1 || second_converted == 1)
         return 0;
 
     // saving iconv output
@@ -87,22 +90,13 @@ int count_or_replace_with_iconv(iconv_t myconv, const char* input, size_t first,
             // creating arguments for second iconv 
             // to check which encoding of the possible ones are
             // most probably (based on frequencies
-            char* back_in_buf = (char*) malloc(2*sizeof(char));
-            strncpy(back_in_buf, &first_out_buf[0], (size_t)1);
-            strncpy(back_in_buf+1, &second_out_buf[0], (size_t)1);
-            char* back_in_ptr = back_in_buf;
-            size_t back_in_l = 2;
+            char back_in_buf[2];
+            back_in_buf[0] = first_out_buf[0];
+            back_in_buf[1] = second_out_buf[0];
             char back_out_buf[1];
-            char* back_out_ptr = back_out_buf;
-            size_t back_out_l = 1;
-
-            iconv(myconv, &back_in_ptr, &back_in_l, &back_out_ptr, &back_out_l);
-            free(back_in_buf);
-            back_in_buf = NULL;
-            if (back_out_l < 1)
-            {
+            size_t back_converted = convert_char(myconv, &back_in_buf[0], 1, back_out_buf, 1);
+            if (back_converted < 1)
                 return freq[256 * first_byte + second_byte];
-            }
         }
         else if (operation == REPLACE)
         {
@@ -114,6 +108,14 @@ int count_or_replace_with_iconv(iconv_t myconv, const char* input, size_t first,
     return 0;
 }
 
+/**
+ * Iterates through input, and when reaches 2 2-byte utf-8 characters after each other,
+ * do one of the two followings:
+ * - if best_iconv is not given (-1):
+ *   runs through all iconvs, call count_or_replace_with_iconv() with COUNT operation
+ * - if best_iconv is given (>=0):
+ *   calls count_or_replace_with_iconv() with REPLACE and puts result into @result
+ * */
 void fix_utf8_encoding(const char* input, const long freq[], int scores[], iconv_t iconvs[], int best_iconv, char* result)
 {
     unsigned int i;
@@ -121,14 +123,19 @@ void fix_utf8_encoding(const char* input, const long freq[], int scores[], iconv
     int pos_in_result = 0;
     for(i=0; i < l;)
     {
-        char first = get_next_utf8_char_len(&input[i], (unsigned char)(l - i));
+        char first = get_next_utf8_char_len(&input[i], l - i);
         if (first > 1 && first + i < l)
         {
-            char second = get_next_utf8_char_len(&input[i+first], (unsigned char)(l - i - first));
+            char second = get_next_utf8_char_len(&input[i+first], l - i - first);
             if (second <= 0) 
             {
                 // we want to skip this character and we trigger this with a second=1
                 second = 1;
+                if (best_iconv != -1)
+                {
+                    strncpy(&result[pos_in_result], &input[i], first + second);
+                    pos_in_result += first + second;
+                }
             }
             else if (second > 1)
             {
@@ -177,7 +184,6 @@ void fix_utf8_encoding(const char* input, const long freq[], int scores[], iconv
         }
         else if (first == 1)
         {
-            // first == 1
             if (best_iconv != -1)
             {
                 strncpy(&result[pos_in_result], &input[i], 1);
@@ -193,6 +199,11 @@ void fix_utf8_encoding(const char* input, const long freq[], int scores[], iconv
     }
 }
 
+/**
+ * Iterates through all bytes in input, and when an invalid byte (in utf-8) is reached,
+ * checks if it could be a 1-byte encoding character, and converts it to utf-8, and
+ * chooses the most frequent utf-8 character of these
+ * */
 void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], char* output)
 {
     unsigned int i;
@@ -200,7 +211,7 @@ void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], 
     int pos_in_result = 0;
     for(i=0; i < l;i++)
     {
-        char next_utf8_len = get_next_utf8_char_len(&input[i], (unsigned char)(l - i));
+        char next_utf8_len = get_next_utf8_char_len(&input[i], l - i);
         if (next_utf8_len == 0)
         {
             // skip character, its not valid and messes up data
@@ -255,4 +266,123 @@ void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], 
     }
 }
 
+void change_utf8_char_to_more_frequent(const char* input, const long freq[], iconv_t fwd_iconvs[], iconv_t bwd_iconvs[], char* output)
+{
+    unsigned int i;
+    unsigned int l = strlen(input);
+    int from_scores[NUM_ENCODINGS];
+    for (i = 0; i < NUM_ENCODINGS; i++)
+        from_scores[i] = 0;
+    int to_scores[NUM_ENCODINGS];
+    for (i = 0; i < NUM_ENCODINGS; i++)
+        to_scores[i] = 0;
 
+    // check with all encodings
+    for(i=0; i < l;)
+    {
+        char next_utf8_len = get_next_utf8_char_len(&input[i], l - i);
+        if (next_utf8_len == 2)
+        {
+            int local_scores[NUM_ENCODINGS];
+            for (int iconv_i = 0; iconv_i < NUM_ENCODINGS; iconv_i++)
+                local_scores[iconv_i] = 0;
+
+            for (int iconv_i = 0; iconv_i < NUM_ENCODINGS; iconv_i++)
+            {
+                char out_buf[1];
+                size_t converted = convert_char(fwd_iconvs[iconv_i], &input[i], next_utf8_len, out_buf, 1);
+                if (converted == 0)
+                {
+                    for (int iconv_j = 0; iconv_j < NUM_ENCODINGS; iconv_j++)
+                    {
+                        char reverse_out_buf[6];
+                        size_t reverse_converted = convert_char(bwd_iconvs[iconv_j], &out_buf[0], 1, reverse_out_buf, 6);
+                        if (reverse_converted == 4)
+                        {
+                            char valid_char[2];
+                            valid_char[0] = reverse_out_buf[0];
+                            valid_char[1] = reverse_out_buf[1];
+                            if (freq[256*(unsigned char)valid_char[0] + (unsigned char)valid_char[1]] > freq[256*(unsigned char)input[i]+(unsigned char)input[i+1]])
+                            {
+                                local_scores[iconv_j] += freq[256*(unsigned char)valid_char[0] + (unsigned char)valid_char[1]];
+                                from_scores[iconv_i] += 1;
+                            }
+                        }
+                    }
+                }
+            }
+            int max = 0;
+            for (int iconv_i = 0; iconv_i < NUM_ENCODINGS; iconv_i++)
+                max = max > local_scores[iconv_i] ? max : local_scores[iconv_i];
+
+            if (max > 0)
+                for (int iconv_i = 0; iconv_i < NUM_ENCODINGS; iconv_i++)
+                    if (local_scores[iconv_i] == max)
+                        to_scores[iconv_i]++;
+        }
+        i += (next_utf8_len > 1 ? next_utf8_len : 1);
+    }
+
+    int pos_in_result = 0;
+
+
+    // choose best
+    int max = 0;
+    for (int iconv_i = 0; iconv_i < NUM_ENCODINGS; iconv_i++)
+        max = max > from_scores[iconv_i] ? max : from_scores[iconv_i];
+    iconv_t iconv_from = fwd_iconvs[0];
+    for (int iconv_i = 0; iconv_i < NUM_ENCODINGS; iconv_i++)
+        if (from_scores[iconv_i] == max)
+        {
+            iconv_from = fwd_iconvs[iconv_i];
+            break;
+        }
+    max = 0;
+    for (int iconv_i = 0; iconv_i < NUM_ENCODINGS; iconv_i++)
+        max = max > to_scores[iconv_i] ? max : to_scores[iconv_i];
+    iconv_t iconv_to = bwd_iconvs[0];
+    for (int iconv_i = 0; iconv_i < NUM_ENCODINGS; iconv_i++)
+        if (to_scores[iconv_i] == max)
+        {
+            iconv_to = bwd_iconvs[iconv_i];
+            break;
+        }
+    for (i = 0; i < l;)
+    {
+        char next_utf8_len = get_next_utf8_char_len(&input[i], l - i);
+        if (next_utf8_len > 1)
+        {
+            char out_buf[1];
+            size_t converted = convert_char(iconv_from, &input[i], next_utf8_len, out_buf, 1);
+            if (converted == 0)
+            {
+                char reverse_out_buf[6];
+                size_t reverse_converted = convert_char(iconv_to, &out_buf[0], 1, reverse_out_buf, 6);
+                if (reverse_converted == 4)
+                {
+                    char valid_char[2];
+                    valid_char[0] = reverse_out_buf[0];
+                    valid_char[1] = reverse_out_buf[1];
+                    strncpy(&output[pos_in_result], valid_char, 2);
+                    pos_in_result += 2;
+                }
+                else
+                {
+                    strncpy(&output[pos_in_result], &input[i], next_utf8_len);
+                    pos_in_result += next_utf8_len;
+                }
+            }
+            else
+            {
+                strncpy(&output[pos_in_result], &input[i], next_utf8_len);
+                pos_in_result += next_utf8_len;
+            }
+        }
+        else
+        {
+            strncpy(&output[pos_in_result], &input[i], 1);
+            pos_in_result += 1;
+        }
+        i += (next_utf8_len > 1 ? next_utf8_len : 1);
+    }
+}
