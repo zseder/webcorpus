@@ -15,82 +15,63 @@ extern "C" {
     int hamming_dist( uint64_t a1, uint64_t a2);
 }
 
+#define MIN(a,b) a<b?a:b
+#define MAX(a,b) a>b?a:b
+#define ABS(a) a>=0?a:-a
+
 using namespace std;
 
 IdSimhashMap g_id_to_simhash;
 SimhashIdMap g_simhash_to_id;
 
-void search_dup_dummy()
+static char bits_in_16bits [0x1u << 16] ;
+vector<int> search_duplicates_with_bitsum_bucketing()
 {
-    SimhashIdMap::iterator first_hash_it; 
-    for (first_hash_it = g_simhash_to_id.begin(); first_hash_it != g_simhash_to_id.end(); ++first_hash_it)
-    {
-        SimhashIdMap::iterator second_hash_it; 
-        for (second_hash_it = first_hash_it; second_hash_it != g_simhash_to_id.end(); ++second_hash_it)
-        {
-            if (first_hash_it != second_hash_it && hamming_dist(first_hash_it->first, second_hash_it->first) <= 3)
-            {
-                vector<int>::iterator id_it;
-                for (id_it = g_simhash_to_id[first_hash_it->first].begin(); id_it != g_simhash_to_id[first_hash_it->first].end(); id_it++)
-                    cout << *id_it << " ";
-                for (id_it = g_simhash_to_id[second_hash_it->first].begin(); id_it != g_simhash_to_id[second_hash_it->first].end(); id_it++)
-                    cout << *id_it << " ";
-                cout << endl;
-            }
-        }
-    }
-}
-
-vector<int> search_duplicates()
-{
-    vector<vector<uint64_t> > buckets;
+    cerr << "Bitsum bucketing started.\n";
+    vector<uint64_t> buckets[33][33];
     SimhashIdMap::iterator hash_it; 
-    for (hash_it = g_simhash_to_id.begin(); hash_it != g_simhash_to_id.end(); hash_it++)
+    for (hash_it = g_simhash_to_id.begin(); hash_it != g_simhash_to_id.end(); ++hash_it)
     {
-        vector<vector<uint64_t> >::iterator bucket_it;
-        bool inserted = false;
-        for (bucket_it = buckets.begin(); bucket_it != buckets.end(); bucket_it++)
-        {
-            if (hamming_dist(hash_it->first, bucket_it->at(0)) <= 20)
-            {
-                bucket_it->push_back(hash_it->first);
-                inserted = true;
-                break;
-            }
-        }
-        if (!inserted)
-        {
-            vector<uint64_t> new_bucket;
-            new_bucket.push_back(hash_it->first);
-            buckets.push_back(new_bucket);
-        }
+        int lower = bits_in_16bits[hash_it->first & 0xffffu] + bits_in_16bits[(hash_it->first >> 16) & 0xffffu];
+        int upper = bits_in_16bits[(hash_it->first >> 32) & 0xffffu] + bits_in_16bits[(hash_it->first >> 48) & 0xffffu];
+        buckets[lower][upper].push_back(hash_it->first);
     }
+    cerr << "Bitsum bucketing ended.\n";
 
-    //after creating buckets, check only those who are in the same one
     vector<int> to_drop;
-
-    vector<vector<uint64_t> >::iterator bucket_it;
-    for (bucket_it = buckets.begin(); bucket_it != buckets.end(); bucket_it++)
+    int i = 0;
+    time_t progress = time(NULL);
+    for (hash_it = g_simhash_to_id.begin(); hash_it != g_simhash_to_id.end(); ++hash_it)
     {
-        vector<uint64_t>::iterator first, second;
-        for (first = bucket_it->begin(); first != bucket_it->end(); ++first)
-            for (second = first + 1; second != bucket_it->end(); ++second)
+        i++;
+        if (i*100/g_simhash_to_id.size() > (i-1)*100/g_simhash_to_id.size())
+        {
+            cerr << (i-1)*100/g_simhash_to_id.size() << " done in " << time(NULL) - progress << " seconds\n";
+            progress = time(NULL);
+        }
+        int lower = bits_in_16bits[hash_it->first & 0xffffu] + bits_in_16bits[(hash_it->first >> 16) & 0xffffu];
+        int upper = bits_in_16bits[(hash_it->first >> 32) & 0xffffu] + bits_in_16bits[(hash_it->first >> 48) & 0xffffu];
+        for (int possible_lower = MAX(0, lower - 3); possible_lower != (MIN(33, lower + 4)); possible_lower++)
+            for (int possible_upper = MAX(0, upper - 3); possible_upper != (MIN(33, upper + 4)); possible_upper++)
             {
-                if (hamming_dist(*first, *second) <= 3)
+                if (ABS(possible_lower - lower) + ABS(possible_upper - upper) > 3)
+                    continue;
+
+                vector<uint64_t>& bucket = buckets[possible_lower][possible_upper];
+                vector<uint64_t>::iterator other_it;
+                for (other_it = bucket.begin(); other_it != bucket.end(); ++other_it)
                 {
-                    vector<int>::iterator id_it;
-                    for (id_it = g_simhash_to_id[*first].begin(); id_it != g_simhash_to_id[*first].end(); id_it++)
+                    if (*other_it == hash_it->first)
+                        continue;
+                    
+                    if (hamming_dist(hash_it->first, *other_it) <= 3)
                     {
-                        if (id_it != g_simhash_to_id[*first].begin())
+                        vector<int>::iterator id_it;
+                        for (id_it = g_simhash_to_id[*other_it].begin(); id_it != g_simhash_to_id[*other_it].end(); id_it++)
+                        {
                             to_drop.push_back(*id_it);
-                        //cout << *id_it << " ";
+                        }
                     }
-                    for (id_it = g_simhash_to_id[*second].begin(); id_it != g_simhash_to_id[*second].end(); id_it++)
-                    {
-                        to_drop.push_back(*id_it);
-                        //cout << *id_it << " ";
-                    }
-                    //cout << endl;
                 }
             }
     }
@@ -120,10 +101,8 @@ int main(int argc, char **argv)
     if (doc != NULL)
         delete doc;
 
-    vector<int> to_drop = search_duplicates();
+    vector<int> to_drop = search_duplicates_with_bitsum_bucketing();
 
-    //search_dup_dummy();
-    
     fclose(input);
     input = fopen(argv[1], "r");
     vector<int>::iterator id_it = to_drop.begin();
@@ -141,7 +120,6 @@ int main(int argc, char **argv)
         delete doc;
         doc = new Doc();
     }
-    
 
 	return 0;
 }
