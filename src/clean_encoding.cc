@@ -90,7 +90,7 @@ int main(int argc, char **argv)
                 change_utf8_char_to_more_frequent(result, &freq[0], iconvs, reverse_iconvs, fixed);
                 char* fixed_2 = (char*) calloc(strlen(fixed) * 6 + 1, sizeof(char));
                 fix_1byte_encoding(fixed, &freq[0], reverse_iconvs, fixed_2);
-                cout << fixed;
+                cout << fixed_2;
                 free(result);
                 result = NULL;
                 free(fixed);
@@ -108,11 +108,15 @@ int main(int argc, char **argv)
             // guess it's valid encoding and convert it to utf8
             // utf max len supposed to be 6
             cout << "DOCSTART " << SPLITCODE << " " << doc->id << endl;
-            char* fixed = (char*) calloc(doc->text.size() * 6 + 1, sizeof(char));
-            fix_1byte_encoding(doc->text.c_str(), &freq[0], reverse_iconvs, fixed);
-            cout << fixed;
+            char* fixed = (char*) calloc(doc->text.size() * 2 + 1, sizeof(char));
+            change_utf8_char_to_more_frequent(doc->text.c_str(), &freq[0], iconvs, reverse_iconvs, fixed);
+            char* fixed_2 = (char*) calloc(strlen(fixed) * 6 + 1, sizeof(char));
+            fix_1byte_encoding(fixed, &freq[0], reverse_iconvs, fixed_2);
+            cout << fixed_2;
             free(fixed);
             fixed = NULL;
+            free(fixed_2);
+            fixed_2 = NULL;
             cout << "DOCEND " << SPLITCODE << " " << doc->id << endl;
         }
 
