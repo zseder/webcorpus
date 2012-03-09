@@ -28,13 +28,11 @@ bin: $(BIN_DIR) build
 	cp $(PYTHON_SCRIPTS) $(BIN_DIR)
 	mv $(CPP_BINS) $(BIN_DIR)
 	if [ -e splitcode.py ]; then mv splitcode.py $(BIN_DIR)/; fi
-	#cp split-sentences.perl $(BIN_DIR)/
 	mv sentence_tokenizer $(BIN_DIR)/
 	cp tokenizer.pl $(BIN_DIR)/
 
 clean:
 	for f in $(FLEX_BINS) $(PYTHON_SCRIPTS) $(CPP_BINS); do rm -f $(BIN_DIR)/$$f; done
-	rm -f $(BIN_DIR)/split-sentences.perl
 	rm -f $(BIN_DIR)/sentence_tokenizer
 	rm -f $(BIN_DIR)/tokenizer.pl
 	rm -f $(BIN_DIR)/*pyc
