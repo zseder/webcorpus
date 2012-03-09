@@ -16,6 +16,8 @@ FLEX_SRC = htmldetag.flex htmlformat.flex get_htmls_from_wire.flex
 PYTHON_SCRIPTS = clean_wire_encoding.py wire_to_webcorp.py
 CPP_BINS = sentencefilter textcatfilter hunspellfilter docfilter dupfilter neardupfilter clean_encoding html_entity_replacer boilerplatefilter
 
+LANG = undefined
+
 all: build bin
 	@echo Everything is ready
 
@@ -56,7 +58,7 @@ $(FLEX_BINS): splitcode.h $(FLEX_SRC)
 	rm lex.yy.c
 
 sentence_tokenizer: sentence_tokenizer.flex.template
-	python flex_utf8_chardef_replacer.py $(RES_DIR)/latin_small_utf8_hex $(RES_DIR)/latin_capital_utf8_hex $< > $@.flex
+	python flex_utf8_chardef_replacer.py $(RES_DIR)/latin_small_utf8_hex $(RES_DIR)/latin_capital_utf8_hex $(RES_DIR)/$(LANG).nbp $< > $@.flex
 	flex $@.flex
 	gcc -lfl lex.yy.c -o $@
 	rm lex.yy.c

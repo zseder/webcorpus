@@ -10,7 +10,7 @@ endef
 TEXTCAT_CONFIG = /home/zseder/Sandbox/textcat/libtextcat-2.2/langclass/conf.txt
 TEXTCAT_CONF_LIMIT = 1.3
 
-HUNSPELL_RATIO_LIMIT = 0.8
+HUNSPELL_RATIO_LIMIT = 0.6
 
 BOILER_PLATE_LIMIT = 20 
 
@@ -20,20 +20,20 @@ BOILER_PLATE_LIMIT = 20
 # This is for storage.raw files if something is messed up while
 # running WIRE and so data cannot be extracted with its wire-info-extract method
 %.raw: %.not_extractable_wire
-	cat $< | $(BIN_DIR)/get_htmls_from_wire | python $(BIN_DIR)/clean_wire_encoding.py> $@
+	time cat $< | $(BIN_DIR)/get_htmls_from_wire | python $(BIN_DIR)/clean_wire_encoding.py> $@
 
 %.raw: %.wire
-	cat $< | python $(BIN_DIR)/wire_to_webcorp.py | python $(BIN_DIR)/clean_wire_encoding.py > $@
+	time cat $< | python $(BIN_DIR)/wire_to_webcorp.py | python $(BIN_DIR)/clean_wire_encoding.py > $@
 
 %.parsed: %.raw
-	cat $< | $(BIN_DIR)/htmldetag | $(BIN_DIR)/boilerplatefilter $(BOILER_PLATE_LIMIT) | $(BIN_DIR)/htmlformat | $(BIN_DIR)/html_entity_replacer > $@
+	time cat $< | $(BIN_DIR)/htmldetag | $(BIN_DIR)/boilerplatefilter $(BOILER_PLATE_LIMIT) | $(BIN_DIR)/htmlformat | $(BIN_DIR)/html_entity_replacer > $@
 
 %.senfiltered: %.parsed
-	#cat $< | $(BIN_DIR)/split-sentences.perl -d $(SRC_DIR) | grep -v "^$$" | grep -v "^<[pP]>$$" | $(BIN_DIR)/sentencefilter > $@
-	cat $< | $(BIN_DIR)/sentence_tokenizer | grep -v "^$$" | grep -v "^<[pP]>$$" | sed "s/^\s*//g" | sed "s/\s*$$//g" | $(BIN_DIR)/sentencefilter | $(BIN_DIR)/docfilter > $@
+	l=`basename $@ .senfiltered`; cd $(SRC_DIR); make sentence_tokenizer LANG=$$l; mv sentence_tokenizer $(BIN_DIR)/
+	time cat $< | $(BIN_DIR)/sentence_tokenizer | grep -v "^$$" | grep -v "^<[pP]>$$" | sed "s/^\s*//g" | sed "s/\s*$$//g" | $(BIN_DIR)/sentencefilter | $(BIN_DIR)/docfilter > $@
 
 %.langfiltered: %.senfiltered
-	lang=`basename $< .senfiltered`; \
+	time lang=`basename $< .senfiltered`; \
 		d=`for e in $(DICTS); do echo $$e; done | grep "$$lang" | cut -f2 -d":"`;\
 		if [ -z "$$d" ]; then \
 		    cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@; \
@@ -43,10 +43,10 @@ BOILER_PLATE_LIMIT = 20
 
 %.cleaned: %.langfiltered %.senfiltered
 	@echo "WARNING: After cleaning, one has to run lang filtering again with cleaned_langfiltered target"
-	l=`basename $@ .cleaned`; cat $$l.senfiltered | $(BIN_DIR)/clean_encoding $$l.langfiltered > $@
+	time l=`basename $@ .cleaned`; cat $$l.senfiltered | $(BIN_DIR)/clean_encoding $$l.langfiltered > $@
 
 %.cleaned_langfiltered: %.cleaned
-	lang=`basename $< .cleaned`; \
+	time lang=`basename $< .cleaned`; \
 		d=`for e in $(DICTS); do echo $$e; done | grep "$$lang" | cut -f2 -d":"`;\
 		if [ -z "$$d" ]; then \
 		    cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@; \
@@ -55,7 +55,7 @@ BOILER_PLATE_LIMIT = 20
 	    fi
 	
 %.dedup: %.cleaned_langfiltered
-	cat $< | $(BIN_DIR)/dupfilter > $@
+	time cat $< | $(BIN_DIR)/dupfilter > $@
 
 #%.dedup: %.langfiltered
 #	@echo WARNING: when running dupfilter after 1st phase of langfilter,
@@ -64,8 +64,8 @@ BOILER_PLATE_LIMIT = 20
 #	cat $< | $(BIN_DIR)/dupfilter > $@
 
 %.neardedup: %.dedup
-	cat $< | $(BIN_DIR)/neardupfilter > $@
+	time cat $< | $(BIN_DIR)/neardupfilter > $@
 
 %.tok: %.neardedup
-	cat $< | $(BIN_DIR)/tokenizer.pl > $@
+	time cat $< | $(BIN_DIR)/tokenizer.pl > $@
 
