@@ -4,7 +4,8 @@ SRC_DIR = ../src
 # Dictionaries
 define DICTS
 polish:/home/zseder/Sandbox/HunspellDictionaries/Polish/pl_PL \
-spanish:/home/zseder/Sandbox/HunspellDictionaries/Spanish/es_ES
+spanish:/home/zseder/Sandbox/HunspellDictionaries/Spanish/es_ES \
+catalan:/home/zseder/Sandbox/HunspellDictionaries/Catalan/ca_ES
 endef
 
 TEXTCAT_CONFIG = /home/zseder/Sandbox/textcat/libtextcat-2.2/langclass/conf.txt
@@ -33,25 +34,25 @@ BOILER_PLATE_LIMIT = 20
 	time cat $< | $(BIN_DIR)/sentence_tokenizer | grep -v "^$$" | grep -v "^<[pP]>$$" | sed "s/^\s*//g" | sed "s/\s*$$//g" | $(BIN_DIR)/sentencefilter | $(BIN_DIR)/docfilter > $@
 
 %.langfiltered: %.senfiltered
-	time lang=`basename $< .senfiltered`; \
+	lang=`basename $< .senfiltered`; \
 		d=`for e in $(DICTS); do echo $$e; done | grep "$$lang" | cut -f2 -d":"`;\
 		if [ -z "$$d" ]; then \
-		    cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@; \
+		    time cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@; \
 		else \
-			cat $< | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>$${lang}.bad > $@ ;\
+			time cat $< | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>$${lang}.bad > $@ ;\
 	    fi
 
 %.cleaned: %.langfiltered %.senfiltered
 	@echo "WARNING: After cleaning, one has to run lang filtering again with cleaned_langfiltered target"
-	time l=`basename $@ .cleaned`; cat $$l.senfiltered | $(BIN_DIR)/clean_encoding $$l.langfiltered > $@
+	l=`basename $@ .cleaned`; time cat $$l.senfiltered | $(BIN_DIR)/clean_encoding $$l.langfiltered > $@
 
 %.cleaned_langfiltered: %.cleaned
-	time lang=`basename $< .cleaned`; \
+	lang=`basename $< .cleaned`; \
 		d=`for e in $(DICTS); do echo $$e; done | grep "$$lang" | cut -f2 -d":"`;\
 		if [ -z "$$d" ]; then \
-		    cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@; \
+		    time cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@; \
 		else \
-			cat $< | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>{lang}.bad > $@ ;\
+			time cat $< | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>$${lang}.bad > $@ ;\
 	    fi
 	
 %.dedup: %.cleaned_langfiltered
