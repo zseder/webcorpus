@@ -38,18 +38,30 @@ BOILER_PLATE_LIMIT = 20
 		if [ -z "$$d" ]; then \
 		    cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@; \
 		else \
-			cat $< | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>/dev/null > $@ ;\
+			cat $< | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>$${lang}.bad > $@ ;\
 	    fi
 
 %.cleaned: %.langfiltered %.senfiltered
-	@echo "After cleaning, we run lang filtering again"
-# HACK Next line is copied from %.langiltered target, if we change that, change this, too!
-	l=`basename $@ .cleaned`; \
-	    d=`for e in $(DICTS); do echo $$e; done | grep "$$l" | cut -f2 -d":"`;\
-		cat $$l.senfiltered | $(BIN_DIR)/clean_encoding $$l.langfiltered | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>/dev/null > $@
+	@echo "WARNING: After cleaning, one has to run lang filtering again with cleaned_langfiltered target"
+	l=`basename $@ .cleaned`; cat $$l.senfiltered | $(BIN_DIR)/clean_encoding $$l.langfiltered > $@
+
+%.cleaned_langfiltered: %.cleaned
+	lang=`basename $< .cleaned`; \
+		d=`for e in $(DICTS); do echo $$e; done | grep "$$lang" | cut -f2 -d":"`;\
+		if [ -z "$$d" ]; then \
+		    cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@; \
+		else \
+			cat $< | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>{lang}.bad > $@ ;\
+	    fi
 	
-%.dedup: %.cleaned
+%.dedup: %.cleaned_langfiltered
 	cat $< | $(BIN_DIR)/dupfilter > $@
+
+#%.dedup: %.langfiltered
+#	@echo WARNING: when running dupfilter after 1st phase of langfilter,
+#	@echo there maybe wrong coded characters in the data
+#	@echo It's not recommended to use this target
+#	cat $< | $(BIN_DIR)/dupfilter > $@
 
 %.neardedup: %.dedup
 	cat $< | $(BIN_DIR)/neardupfilter > $@
