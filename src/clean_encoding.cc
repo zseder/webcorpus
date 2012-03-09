@@ -90,7 +90,7 @@ int main(int argc, char **argv)
                 change_utf8_char_to_more_frequent(result, &freq[0], iconvs, reverse_iconvs, fixed);
                 char* fixed_2 = (char*) calloc(strlen(fixed) * 6 + 1, sizeof(char));
                 fix_1byte_encoding(fixed, &freq[0], reverse_iconvs, fixed_2);
-                cout << fixed_2;
+                cout << fixed;
                 free(result);
                 result = NULL;
                 free(fixed);

@@ -94,7 +94,7 @@ int count_or_replace_with_iconv(iconv_t myconv, const char* input, size_t first,
             back_in_buf[0] = first_out_buf[0];
             back_in_buf[1] = second_out_buf[0];
             char back_out_buf[1];
-            size_t back_converted = convert_char(myconv, &back_in_buf[0], 1, back_out_buf, 1);
+            size_t back_converted = convert_char(myconv, &back_in_buf[0], 2, back_out_buf, 1);
             if (back_converted < 1)
                 return freq[256 * first_byte + second_byte];
         }
@@ -152,9 +152,10 @@ void fix_utf8_encoding(const char* input, const long freq[], int scores[], iconv
                     int max = 0;
                     for (iconv_i=0; iconv_i < NUM_ENCODINGS; iconv_i++)
                         max = max > local_scores[iconv_i] ? max : local_scores[iconv_i];
-                    for (iconv_i=0; iconv_i < NUM_ENCODINGS; iconv_i++)
-                        if (local_scores[iconv_i] == max)
-                            scores[iconv_i] += 1;
+                    if (max > 0)
+                        for (iconv_i=0; iconv_i < NUM_ENCODINGS; iconv_i++)
+                            if (local_scores[iconv_i] == max)
+                                scores[iconv_i] += 1;
                 }
                 else
                 {
@@ -283,7 +284,7 @@ void change_utf8_char_to_more_frequent(const char* input, const long freq[], ico
         char next_utf8_len = get_next_utf8_char_len(&input[i], l - i);
         if (next_utf8_len == 2)
         {
-            int local_scores[NUM_ENCODINGS];
+            long local_scores[NUM_ENCODINGS];
             for (int iconv_i = 0; iconv_i < NUM_ENCODINGS; iconv_i++)
                 local_scores[iconv_i] = 0;
 
@@ -302,10 +303,16 @@ void change_utf8_char_to_more_frequent(const char* input, const long freq[], ico
                             char valid_char[2];
                             valid_char[0] = reverse_out_buf[0];
                             valid_char[1] = reverse_out_buf[1];
-                            if (freq[256*(unsigned char)valid_char[0] + (unsigned char)valid_char[1]] > freq[256*(unsigned char)input[i]+(unsigned char)input[i+1]])
+                            if (freq[256*(unsigned char)valid_char[0] + (unsigned char)valid_char[1]] >= freq[256*(unsigned char)input[i]+(unsigned char)input[i+1]])
                             {
                                 local_scores[iconv_j] += freq[256*(unsigned char)valid_char[0] + (unsigned char)valid_char[1]];
                                 from_scores[iconv_i] += 1;
+                            }
+                            else
+                            {
+                                local_scores[iconv_j] -= freq[256*(unsigned char)valid_char[0] + (unsigned char)valid_char[1]];
+                                from_scores[iconv_i] -= 1;
+
                             }
                         }
                     }
