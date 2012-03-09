@@ -9,7 +9,7 @@ catalan:/home/zseder/Sandbox/HunspellDictionaries/Catalan/ca_ES
 endef
 
 TEXTCAT_CONFIG = /home/zseder/Sandbox/textcat/libtextcat-2.2/langclass/conf.txt
-TEXTCAT_CONF_LIMIT = 1.3
+TEXTCAT_CONF_LIMIT = 1.1
 
 HUNSPELL_RATIO_LIMIT = 0.6
 
