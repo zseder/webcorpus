@@ -53,7 +53,7 @@ def main():
     small_one, small_two, small_three = read_hex_bytes(file(sys.argv[1]))
     capital_one, capital_two, capital_three = read_hex_bytes(file(sys.argv[2]))
 
-    flex_file = file(sys.argv[4])
+    flex_file = file(sys.argv[-1])
     flex_data = flex_file.read()
     s = ""
     s += to_flex("LATIN_SMALL_1_BYTE", small_one)
@@ -67,7 +67,9 @@ def main():
     s += "LATIN_CHAR ({LATIN_CHARACTER_SMALL}|{LATIN_CHARACTER_CAPITAL})\n"
     flex_data = flex_data.replace("INSERT_CHARACTER_DEFS", s)
     if "INSERT_LANGUAGE_NONBREAKING_PREFIX" in flex_data:
-        if(sys.argv[3].endswith("undefined.nbp")):
+        if len(sys.argv) < 5:
+            nonbreaking_prefixes = None
+        elif(sys.argv[3].endswith("undefined.nbp")):
             sys.stderr.write(nolangmsg)
             nonbreaking_prefixes = None
         else:
