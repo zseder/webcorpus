@@ -21,7 +21,7 @@ LANG = undefined
 all: build bin
 	@echo Everything is ready
 
-build: $(FLEX_BINS) $(CPP_BINS) sentence_tokenizer 
+build: $(FLEX_BINS) $(CPP_BINS) sentence_tokenizer word_tokenizer 
 	@echo Building complete.
 
 bin: $(BIN_DIR) build
@@ -31,11 +31,12 @@ bin: $(BIN_DIR) build
 	mv $(CPP_BINS) $(BIN_DIR)
 	if [ -e splitcode.py ]; then mv splitcode.py $(BIN_DIR)/; fi
 	mv sentence_tokenizer $(BIN_DIR)/
-	cp tokenizer.pl $(BIN_DIR)/
+	mv word_tokenizer $(BIN_DIR)/
 
 clean:
 	for f in $(FLEX_BINS) $(PYTHON_SCRIPTS) $(CPP_BINS); do rm -f $(BIN_DIR)/$$f; done
 	rm -f $(BIN_DIR)/sentence_tokenizer
+	rm -f $(BIN_DIR)/word_tokenizer
 	rm -f $(BIN_DIR)/tokenizer.pl
 	rm -f $(BIN_DIR)/*pyc
 	cd shash/src; make clean
@@ -43,6 +44,7 @@ clean:
 	rm -f *.o
 	rm -f *pyc
 	rm -f $(FLEX_BINS) $(CPP_BINS)
+	rm -f lex.yy.*
 	@echo Not removing splitcode. Remove by hand if really needed
 
 simhash:
@@ -59,6 +61,13 @@ $(FLEX_BINS): splitcode.h $(FLEX_SRC)
 
 sentence_tokenizer: sentence_tokenizer.flex.template
 	python flex_utf8_chardef_replacer.py $(RES_DIR)/latin_small_utf8_hex $(RES_DIR)/latin_capital_utf8_hex $(RES_DIR)/$(LANG).nbp $< > $@.flex
+	flex $@.flex
+	gcc -lfl lex.yy.c -o $@
+	rm lex.yy.c
+	rm $@.flex
+
+word_tokenizer: word_tokenizer.flex.template
+	python flex_utf8_chardef_replacer.py $(RES_DIR)/latin_small_utf8_hex $(RES_DIR)/latin_capital_utf8_hex $< > $@.flex
 	flex $@.flex
 	gcc -lfl lex.yy.c -o $@
 	rm lex.yy.c
