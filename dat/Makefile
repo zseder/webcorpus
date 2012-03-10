@@ -68,5 +68,5 @@ BOILER_PLATE_LIMIT = 20
 	time $(BIN_DIR)/neardupfilter $< > $@
 
 %.tok: %.neardedup
-	time cat $< | $(BIN_DIR)/word_tokenizer > $@
+	time cat $< | $(BIN_DIR)/word_tokenizer | sed "s/\ \ /\ /g" | sed "s/^\s*//g" | sed "s/\s*$$//g" > $@
 
