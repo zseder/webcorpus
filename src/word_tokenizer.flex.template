@@ -1,0 +1,42 @@
+%option noyywrap
+
+%{
+    #include "splitcode.h"
+%}
+
+INSERT_CHARACTER_DEFS
+ISNUM [0-9]
+ISALNUM {LATIN_CHAR}|{ISNUM}
+ISLOWER {LATIN_CHARACTER_SMALL}
+ISUPPER {LATIN_CHARACTER_CAPITAL}
+
+SPACE [ 	\240]
+UB [\200-\277]
+
+%%
+{ISNUM}+","{ISNUM}+ {
+    printf(yytext);
+}
+[,] {
+    printf(" , ");
+}
+[\.]{2,} {
+    printf(yytext);
+}
+".\n" {
+    printf(" .\n");
+}
+{ISALNUM}|{SPACE}|[\.\'\`\,\-] {
+    printf("%s", yytext);
+}
+
+    /* next rues are about not splitting any utf8 chars */
+[\300-\337]{UB} { printf(yytext);}
+[\340-\357]{UB}{2} { printf(yytext);}
+[\360-\367]{UB}{3} { printf(yytext);}
+[\370-\373]{UB}{4} { printf(yytext);}
+[\374-\375]{UB}{5} { printf(yytext);}
+. {
+    printf(" %s ", yytext);
+}
+

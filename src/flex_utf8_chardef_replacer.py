@@ -52,15 +52,6 @@ nonbreaking prefixes because file %s not found\n"""
 def main():
     small_one, small_two, small_three = read_hex_bytes(file(sys.argv[1]))
     capital_one, capital_two, capital_three = read_hex_bytes(file(sys.argv[2]))
-    if(sys.argv[3].endswith("undefined.nbp")):
-        sys.stderr.write(nolangmsg)
-        nonbreaking_prefixes = None
-    else:
-        try:
-            nonbreaking_prefixes = [w.strip() for w in file(sys.argv[3]).read().split("\n") if len(w.strip()) > 0]
-        except IOError:
-            sys.stderr.write(filenotfoundmsg % sys.argv[3])
-            nonbreaking_prefixes = None
 
     flex_file = file(sys.argv[4])
     flex_data = flex_file.read()
@@ -75,10 +66,21 @@ def main():
     s += "LATIN_CHARACTER_CAPITAL ({LATIN_CAPITAL_1_BYTE}|{LATIN_CAPITAL_2_BYTE}|{LATIN_CAPITAL_3_BYTE})\n"
     s += "LATIN_CHAR ({LATIN_CHARACTER_SMALL}|{LATIN_CHARACTER_CAPITAL})\n"
     flex_data = flex_data.replace("INSERT_CHARACTER_DEFS", s)
-    if nonbreaking_prefixes is not None:
-        flex_data = flex_data.replace("INSERT_LANGUAGE_NONBREAKING_PREFIX", "|\"" + "\"|\"".join(nonbreaking_prefixes) + "\"")
-    else:
-        flex_data = flex_data.replace("INSERT_LANGUAGE_NONBREAKING_PREFIX", "")
+    if "INSERT_LANGUAGE_NONBREAKING_PREFIX" in flex_data:
+        if(sys.argv[3].endswith("undefined.nbp")):
+            sys.stderr.write(nolangmsg)
+            nonbreaking_prefixes = None
+        else:
+            try:
+                nonbreaking_prefixes = [w.strip() for w in file(sys.argv[3]).read().split("\n") if len(w.strip()) > 0]
+            except IOError:
+                sys.stderr.write(filenotfoundmsg % sys.argv[3])
+                nonbreaking_prefixes = None
+
+        if nonbreaking_prefixes is not None:
+            flex_data = flex_data.replace("INSERT_LANGUAGE_NONBREAKING_PREFIX", "|\"" + "\"|\"".join(nonbreaking_prefixes) + "\"")
+        else:
+            flex_data = flex_data.replace("INSERT_LANGUAGE_NONBREAKING_PREFIX", "")
 
     sys.stdout.write(flex_data)
 
