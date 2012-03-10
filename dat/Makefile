@@ -68,5 +68,5 @@ BOILER_PLATE_LIMIT = 20
 	time $(BIN_DIR)/neardupfilter $< > $@
 
 %.tok: %.neardedup
-	time cat $< | $(BIN_DIR)/tokenizer.pl > $@
+	time cat $< | $(BIN_DIR)/word_tokenizer > $@
 
