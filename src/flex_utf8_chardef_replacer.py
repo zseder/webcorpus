@@ -1,7 +1,7 @@
 """
-Simple script that replaces INSERT_CHARACTER_DEFS in file given in third argument
+Simple script that replaces INSERT_CHARACTER_DEFS in file given in last argument
 with hexadecimal bytes of latin characters that are given by two file (first and
-second argument)
+second argument) and with nonbreaking prefixes if given in last but one argument
 """
 import sys
 

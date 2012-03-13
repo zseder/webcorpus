@@ -267,6 +267,11 @@ void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], 
     }
 }
 
+/**
+ * This method is for changing any possibly bad utf-8 characters to another one,
+ * when a utf-8 character is created from another encoded char, and that encoding
+ * was guessed incorrectly
+ * */
 void change_utf8_char_to_more_frequent(const char* input, const long freq[], iconv_t fwd_iconvs[], iconv_t bwd_iconvs[], char* output)
 {
     unsigned int i;

@@ -1,3 +1,9 @@
+/**
+ * Iterates through paragraphs in a parsed html document
+ * and counts hash for every one of them and if one
+ * comes up too many times (argv[1]), it throws away them
+ *
+ * */
 #include <map>
 
 #include "reader.h"

@@ -4,6 +4,11 @@
  * or iso-8859-??. If so, wire handle all characters as one byte chars,
  * and so a valid utf8 char in 2+ bytes are separated into 2+ individual
  * windows-.../iso-... characters. They have to be detected and fixed.
+ *
+ * Another fix is when a site is still in 1-byte encoding, even it shouldnt
+ *
+ * A third one is when there are utf-8 characters that are created by converting
+ * from another encoding and that encoding was wrongly detected or guessed
  * */
 #include <iconv.h>
 #include <errno.h>

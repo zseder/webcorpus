@@ -1,3 +1,6 @@
+/**
+ * Simple hash based filtering
+ * */
 #include <string>
 #include <set>
 #include "reader.h"

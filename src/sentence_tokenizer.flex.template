@@ -68,6 +68,7 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
     BEGIN(AFTER_NUM_STATE);
 }
 <AFTER_NUM_STATE>{PERIOD}+ {
+    // if there is a period after a number, and patterns before not matched, this could be an end of sentence
     printf("%s", yytext);
     BEGIN(ENDOF_SEN_STATE);
 }
@@ -76,8 +77,8 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
     BEGIN(IN_SEN_STATE);
 }
 
-    /* Now tokenize at PERIODS */
 <IN_SEN_STATE>{SPACE}{NONBREAKING_PREFIX}{PERIOD} {
+    // never break at nonbreaking prefixes
     printf(yytext);
 }
 <START_SEN_STATE>{NONBREAKING_PREFIX}{PERIOD} {
@@ -85,13 +86,16 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
     BEGIN(IN_SEN_STATE);
 }
 <IN_SEN_STATE>{PERIOD}(({ISUPPER}|"-")+{PERIOD})+ {
+    // these are possible abbreviations
     printf(yytext);
     BEGIN(ENDOF_SEN_STATE);
 }
 <IN_SEN_STATE>{ISLOWER}{PERIOD}{ISLOWER} {
+    // lowercase abbreviations
     printf("%s", yytext);
 }
 <IN_SEN_STATE>{PERIOD}+ {
+    // any other case of "." (or more of them) can be an end of sentence
     printf("%s", yytext);
     BEGIN(ENDOF_SEN_STATE);
 }

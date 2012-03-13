@@ -1,3 +1,8 @@
+/**
+ * Detecting nearduplicates based on simhash
+ * see paper for details
+ *
+ * */
 #include <sstream>
 #include <bitset>
 #include <map>

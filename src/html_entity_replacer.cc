@@ -3,6 +3,7 @@
  * grabbed from http://mercurial.intuxication.org/hg/cstuff/raw-file/tip/entities.[hc]
  * and modified slightly to compile and added a main()
  *
+ * see http://stackoverflow.com/questions/1082162/how-to-unescape-html-in-c/
  **/
 
 

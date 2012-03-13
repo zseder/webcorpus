@@ -1,7 +1,8 @@
 /**
- * Keeps only those sentences that
- * TODO
- *
+ * runs a textcat filter on documents based on language fiven in second
+ * argument and config in first argument
+ * NOTE libtextcat has to be installed
+ * WARNING: we attached a patch to libtextcat in src
 **/
 #include <iostream>
 #include <cstdio>

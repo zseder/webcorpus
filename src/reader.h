@@ -1,3 +1,7 @@
+/**
+ * Simple header file for reading documents in our format with splitcode
+ * */
+
 #include <cstdio>
 #include <sstream>
 #include <string>

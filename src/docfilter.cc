@@ -1,3 +1,7 @@
+/**
+ * Simple filter that throws away all documents that doesn't have at least MIN_LINES
+ * sentences
+ * */
 #include <string>
 #include "reader.h"
 #define MIN_LINES	4 
