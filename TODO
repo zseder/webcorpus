@@ -1,2 +1,3 @@
 - dependency checker script (instead of configure)
+- docfilter/MIN_LINES should be an argv parameter instead of predefined
 - add paper link and bibtex when published
