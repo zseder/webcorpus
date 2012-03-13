@@ -1,4 +1,2 @@
-- create non-breaking prefixes to languages by statistics based on words that end 
-    with "."
-- tokenizer.perl should be reimplemented in flex (check out huntoken)
 - dependency checker script (instead of configure)
+- add paper link and bibtex when published
