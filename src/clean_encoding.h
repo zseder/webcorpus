@@ -73,7 +73,7 @@ int count_or_replace_with_iconv(iconv_t myconv, const char* input, size_t first,
 
     //   for second character 
     char second_out_buf[2];
-    size_t second_converted = convert_char(myconv, &input[0+second], second, &second_out_buf[0], 1);
+    size_t second_converted = convert_char(myconv, &input[0+first], second, &second_out_buf[0], 1);
     if (first_converted == 1 || second_converted == 1)
         return 0;
 
@@ -149,6 +149,7 @@ void fix_utf8_encoding(const char* input, const long freq[], int scores[], iconv
                     {
                         local_scores[iconv_i] += count_or_replace_with_iconv(iconvs[iconv_i], &input[i], first, second, COUNT, freq, NULL);
                     }
+
                     int max = 0;
                     for (iconv_i=0; iconv_i < NUM_ENCODINGS; iconv_i++)
                         max = max > local_scores[iconv_i] ? max : local_scores[iconv_i];
