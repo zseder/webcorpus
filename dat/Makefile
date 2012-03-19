@@ -5,13 +5,21 @@ SRC_DIR = ../src
 define DICTS
 polish:/home/zseder/Sandbox/HunspellDictionaries/Polish/pl_PL \
 spanish:/home/zseder/Sandbox/HunspellDictionaries/Spanish/es_ES \
-catalan:/home/zseder/Sandbox/HunspellDictionaries/Catalan/ca_ES
+catalan:/home/zseder/Sandbox/HunspellDictionaries/Catalan/ca_ES \
+dutch:/home/zseder/Sandbox/HunspellDictionaries/Dutch/nl_NL \
+portuguese:/home/zseder/Sandbox/HunspellDictionaries/Portuguese/myspell.pt-20091013/pt_PT \
+croatian:/home/zseder/Sandbox/HunspellDictionaries/Croatian/hr_HR \
+norwegian:/home/zseder/Sandbox/HunspellDictionaries/Norwegian/nb_NO \
+slovak:/home/zseder/Sandbox/HunspellDictionaries/Slovakian/hunspell-sk-20090330/sk_SK
 endef
 
 TEXTCAT_CONFIG = /home/zseder/Sandbox/textcat/libtextcat-2.2/langclass/conf.txt
 TEXTCAT_CONF_LIMIT = 1.1
 
 HUNSPELL_RATIO_LIMIT = 0.6
+
+# used in docfilter
+NUM_LINES_LIMIT = 4
 
 BOILER_PLATE_LIMIT = 20 
 
@@ -31,7 +39,7 @@ BOILER_PLATE_LIMIT = 20
 
 %.senfiltered: %.parsed
 	l=`basename $@ .senfiltered`; cd $(SRC_DIR); make sentence_tokenizer LANG=$$l; mv sentence_tokenizer $(BIN_DIR)/
-	time cat $< | $(BIN_DIR)/sentence_tokenizer | grep -v "^$$" | grep -v "^<[pP]>$$" | sed "s/^\s*//g" | sed "s/\s*$$//g" | $(BIN_DIR)/sentencefilter | $(BIN_DIR)/docfilter > $@
+	time cat $< | $(BIN_DIR)/sentence_tokenizer | grep -v "^$$" | grep -v "^<[pP]>$$" | sed "s/^\s*//g" | sed "s/\s*$$//g" | $(BIN_DIR)/sentencefilter | $(BIN_DIR)/docfilter $(NUM_LINES_LIMIT) > $@
 
 %.langfiltered: %.senfiltered
 	lang=`basename $< .senfiltered`; \
@@ -68,5 +76,5 @@ BOILER_PLATE_LIMIT = 20
 	time $(BIN_DIR)/neardupfilter $< > $@
 
 %.tok: %.neardedup
-	time cat $< | $(BIN_DIR)/word_tokenizer | sed "s/\ \ /\ /g" | sed "s/^\s*//g" | sed "s/\s*$$//g" > $@
+	time cat $< | $(BIN_DIR)/word_tokenizer | sed "s/\s+/\ /g" | sed "s/^\s*//g" | sed "s/\s*$$//g" > $@
 

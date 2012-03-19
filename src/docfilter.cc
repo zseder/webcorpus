@@ -10,6 +10,7 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
+    int min_lines = argc > 1 ? atoi(argv[1]) : MIN_LINES;
     Doc* doc = new Doc();
 	while(get_doc(stdin, doc) > 0)
 	{
@@ -18,7 +19,7 @@ int main(int argc, char **argv)
         while (pos != string::npos)
         {
             line_num++;
-            if (line_num >= MIN_LINES)
+            if (line_num >= min_lines)
             {
                 cout << "DOCSTART " << SPLITCODE << " " << doc->id << endl;
                 cout << doc->text;
