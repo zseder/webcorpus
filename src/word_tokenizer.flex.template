@@ -19,18 +19,16 @@ UB [\200-\277]
     printf(yytext);
 }
 {ISNUM}+"-"{ISNUM}+ {
-    //char* pch = strtok(yytext, "-");
-    //printf("%s\n-\n", pch);
-    //pch = strtok(NULL, "-");
-    //printf("%s\n", pch);
-    printf(yytext);
+    char* pch = strtok(yytext, "-");
+    printf("%s\n-\n", pch);
+    pch = strtok(NULL, "-");
+    printf("%s\n", pch);
 }
 [,] {
     printf(" , ");
 }
 [\.]{2,} {
-    //printf(" %s", yytext);
-    printf("%s", yytext);
+    printf(" %s", yytext);
 }
 ".\n" {
     printf(" .\n");
