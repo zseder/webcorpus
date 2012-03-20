@@ -19,6 +19,8 @@ extern "C" {
 
 using namespace std;
 
+const char* punct= ".,!?:()[]-";
+
 int main(int argc, char **argv)
 {
     char* aff = argv[1];
@@ -48,7 +50,9 @@ int main(int argc, char **argv)
         while (word != NULL) 
         {
             int l = strlen(word);
-            if (l <= MAX_WORD_LEN)
+            if (l == 1 && strpbrk(word, punct) != NULL)
+                good++;
+            else if (l <= MAX_WORD_LEN)
             {
                 size_t inbuflen = l;
                 size_t outbuflen = 4*MAX_WORD_LEN;
