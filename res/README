@@ -1,5 +1,12 @@
+latin character data:
 this data is extracted from ftp://ftp.unicode.org/Public/UNIDATA/UnicodeData.txt
 latin_capital_utf8: latin capital letters encoded in utf-8
 latin_small_utf8: latin small letters encoded in utf-8
 latin_capital_utf8_hex: latin capital letters in utf-8 hex code
 latin_small_utf8_hex: latin small letters encoded in utf8 hex code
+
+nonbreaking prefixes for different languages:
+*.nbp files
+These are used for sentence tokenization and are simply extracted from data
+without any knowledge about some languages based on how frequently they occur
+with a period and without when followed by a capital letter
