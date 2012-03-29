@@ -25,3 +25,56 @@ Usage:
 - dat/Makefile is for processing data, see Makefile for details
   example:
   make finnish.raw; make finnish.parsed; make finnish.senfiltered; etc.
+- some scenarios:
+  - crawl ended without a problem and data is extracted with wire-info-extract
+    - result is in mylang.wire
+    - run these commands in dat/:
+      - make mylang.raw
+      - make mylang.parsed
+      - make mylang.senfiltered
+      - make mylang.langfiltered
+      - make mylang.dedup
+      - make mylang.neardedup
+      - make mylang.tokenized
+    - OR simply (because of make discovers dependencies):
+      - make mylang.tokenized
+  - there were some troubles in crawling
+    - rename Data/text/storage.raw in crawling directory to
+    dat/mylang.not_extractable_wire and run these commands:
+      - make mylang.raw
+      - make mylang.parsed
+      - make mylang.senfiltered
+      - make mylang.langfiltered
+      - make mylang.cleaned # see WIRE troubles later in this file
+      - make mylang.cleaned_langfiltered # see WIRE troubles later in this file
+      - make mylang.dedup
+      - make mylang.neardedup
+      - make mylang.tokenized
+    - this cannot be shortened with "make mylang.tokenized" because
+      then optional cleaning won't run; this depends on users needs and data
+
+- if processing a language, one has to edit dat/Makefile and add hunspell
+  dictionaries in the same format  in which there are already some,
+  or if there is no hunspell dictionary for a given language (like finnish),
+  then use libtextcat (dat/Makefile is prepared to do that automatically,
+  when there is no dictionary given) and edit dat/Makefile in 
+  TEXTCAT_CONFIG an TEXTCAT_CONF_LIMIT variables.
+
+WIRE troubles
+- There are some encoding issues in wire (especially when run didn't end
+  correctly) like:
+  - html is not in utf-8 even though it supposed to be (set in wire.conf)
+  - some htmls lie about in what encoding they are, and so some characters
+    will get messed up, and it's cannot be fixed with a simple iconv anymore
+    Main problem is when a multibyte utf-8 character is handled as more
+    characters in a 1-byte encoding, then ugly things happen
+- when WIRE is crashed while running gatherer or seeder, crawling cannot be
+  continued and data can be extracted in a hard way. The only thing we can do
+  is in dat/Makefile in the target where creating .raw from 
+  .not_extractable_wire
+- because of these problems, there is a "clean encoding" phase in dat/Makefile
+  after language filtering, and the reason of its place is that our cleaning
+  procedure uses clean data for character statistics, and it is extracted
+  from data that is already in a specific language judged by hunspell or
+  textcat. After cleaning, a second language filtering runs because it now will
+  give you more good data in given language.
