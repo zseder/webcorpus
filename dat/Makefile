@@ -66,11 +66,11 @@ BOILER_PLATE_LIMIT = 20
 %.dedup: %.cleaned_langfiltered
 	time cat $< | $(BIN_DIR)/dupfilter > $@
 
-#%.dedup: %.langfiltered
-#	@echo WARNING: when running dupfilter after 1st phase of langfilter,
-#	@echo there maybe wrong coded characters in the data
-#	@echo It's not recommended to use this target
-#	cat $< | $(BIN_DIR)/dupfilter > $@
+%.dedup: %.langfiltered
+	@echo WARNING: when running dupfilter after 1st phase of langfilter,
+	@echo there maybe wrong coded characters in the data
+	@echo see README for details in the root of repository
+	cat $< | $(BIN_DIR)/dupfilter > $@
 
 %.neardedup: %.dedup
 	time $(BIN_DIR)/neardupfilter $< > $@
