@@ -27,7 +27,8 @@ from encodings.aliases import aliases
 from splitcode import header, footer
 
 charset_pattern = re.compile(r"<meta[^>]*charset=([a-zA-Z\-0-9\"\']*)")
-available_encodings = set(aliases.keys() + aliases.values()) 
+available_encodings = set((_.lower() for _ in aliases.keys()))
+available_encodings |= set((_.lower() for _ in aliases.values()))
 
 # for detect invalid positions in UnicodeError message
 position_interval_pattern = re.compile(r"position ([0-9]*)-([0-9]*)")
@@ -76,7 +77,7 @@ def mydecode(doc):
         search_obj = charset_pattern.search(doc)
         enc_in_file = None
         if search_obj is not None:
-            enc_in_file = search_obj.group(1).strip("\"").strip("'")
+            enc_in_file = search_obj.group(1).strip("\"").strip("'").lower().replace('-','_')
             if enc_in_file is not None and enc_in_file in available_encodings and test_encoding(doc, enc_in_file) == 0:
                 decoded = doc.decode(enc_in_file)
                 return decoded
