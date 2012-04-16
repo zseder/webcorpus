@@ -30,6 +30,9 @@ import sys
 import os
 import random
 import string
+import cProfile
+
+sys.stdout.softspace = False
 
 # project includes
 SRC_DIR="/home/judit/webcorpus/bin"
@@ -37,7 +40,8 @@ sys.path.append(SRC_DIR)
 import splitcode
 
 # regex to recognize new documents in heritrix output
-NEWDOCREGEX = "^http.*(\d{1,3}\.){3}\d{1,3}\ \d{14}"
+NEWDOCREGEX = "^http.*(\d{1,3}\.){3}\d{1,3}\ \d"
+#NEWDOCREGEX = "^http.*(\d{1,3}\.){3}\d{1,3}\ \d{14}"
 
 # wire document starting and ending lines
 DOCSTART = "DOCSTART "+splitcode.SPLITCODE+" 1\n"
@@ -55,17 +59,15 @@ class state:
     garbage = 4
     end = 5
 
-doc = []
 
 def main():
-    doc = []
     s = state.start
+    prog = re.compile(str(NEWDOCREGEX))
     for line in sys.stdin:
         # start state, stays here until new document beginning is found
         if s == state.start:
-            match = re.match(str(NEWDOCREGEX), line)
+            match = prog.match(line)
             if match:
-                doc = []
                 mimetype = line.split(' ')[-2]
                 if mimetype.lower() in supported_types:
                     s = state.firstline
@@ -77,13 +79,14 @@ def main():
             http_code = line.split(' ')[1]
             if http_code == "200":
                 s = state.properdoc
+                print DOCSTART , 
+                print line ,
             else:
                 s = state.garbage
         # Not found or unsupported MIME type (i.e. images)
         elif s == state.garbage:
-            match = re.match(str(NEWDOCREGEX), line)
+            match = prog.match(line)
             if match:
-                doc = []
                 mimetype = line.split(' ')[-2]
                 if mimetype.lower() in supported_types:
                     s = state.firstline
@@ -91,25 +94,20 @@ def main():
                     s = state.garbage
         # document to be saved
         elif s == state.properdoc:
-            match = re.match(str(NEWDOCREGEX), line)
+            match = prog.match(line)
             if match:
             # saving document with wire markup
-                print DOCSTART
-                print ''.join(doc)
-                print DOCEND
-                doc = []
+                print DOCSTART ,
                 mimetype = line.split(' ')[-2]
                 if mimetype.lower() in supported_types:
                     s = state.firstline
                 else:
                     s = state.garbage
             else:
-                doc.append(line)
+                print line ,
     # saving last document of the file
     if s == state.properdoc:
-        print DOCSTART
-        print ''.join(doc)
-        print DOCEND
+        print DOCEND ,
                 
 if __name__ == "__main__":
     main()
