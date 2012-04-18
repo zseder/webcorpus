@@ -1,0 +1,49 @@
+# Dictionaries - change to local files
+define DICTS
+polish:/home/zseder/Sandbox/HunspellDictionaries/Polish/pl_PL \
+spanish:/home/zseder/Sandbox/HunspellDictionaries/Spanish/es_ES \
+catalan:/home/zseder/Sandbox/HunspellDictionaries/Catalan/ca_ES \
+dutch:/home/zseder/Sandbox/HunspellDictionaries/Dutch/nl_NL \
+portuguese:/media/sda2/sztaki/myspell.pt-20091013/pt_PT \
+croatian:/home/zseder/Sandbox/HunspellDictionaries/Croatian/hr_HR \
+norwegian:/home/zseder/Sandbox/HunspellDictionaries/Norwegian/nb_NO \
+slovak:/home/zseder/Sandbox/HunspellDictionaries/Slovakian/hunspell-sk-20090330/sk_SK
+endef
+
+# Change next to point at textcats dir and uncomment
+TEXTCAT_DIR = /home/zseder/Sandbox/libtextcat-2.2
+TEXTCAT_INC_DIR = /home/zseder/Sandbox/libtextcat-2.2/src
+TEXTCAT_LIB_DIR = /home/zseder/.local/lib
+TEXTCAT_CONFIG = $(TEXTCAT_DIR)/langclass/conf.txt
+TEXTCAT_LIB_OPT = -L$(TEXTCAT_LIB_DIR) -ltextcat -static
+
+# Change next to point at hunspell lib dir and uncomment
+HUNSPELL_LIB_VER = hunspell-1.3
+HUNSPELL_LIB_DIR = /home/zseder/.local/lib
+HUNSPELL_LIB_OPT =-l$(HUNSPELL_LIB_VER) -L$(HUNSPELL_LIB_DIR) -static
+
+ifndef TEXTCAT_DIR
+$(error Define TEXTCAT_DIR in $(SCR_DIR)/Makefile.inc before proceeding)
+endif
+ifndef TEXTCAT_INC_DIR
+$(error Define TEXTCAT_INC_DIR in $(SCR_DIR)/Makefile.inc before proceeding)
+endif
+ifndef TEXTCAT_LIB_DIR
+$(error Define TEXTCAT_LIB_DIR in $(SCR_DIR)/Makefile.inc before proceeding)
+endif
+ifndef TEXTCAT_CONFIG
+$(error Define TEXTCAT_CONFIG in $(SCR_DIR)/Makefile.inc before proceeding)
+endif
+ifndef TEXTCAT_LIB_OPT
+$(error Define TEXTCAT_LIB_OPT in $(SCR_DIR)/Makefile.inc before proceeding)
+endif
+
+ifndef HUNSPELL_LIB_VER
+$(error Define HUNSPELL_LIB_VER in $(SCR_DIR)/Makefile.inc before proceeding)
+endif
+ifndef HUNSPELL_LIB_DIR
+$(error Define HUNSPELL_LIB_DIR in $(SCR_DIR)/Makefile.inc before proceeding)
+endif
+ifndef HUNSPELL_LIB_OPT
+$(error Define HUNSPELL_LIB_OPT in $(SCR_DIR)/Makefile.inc before proceeding)
+endif
