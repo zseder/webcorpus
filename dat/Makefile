@@ -7,13 +7,13 @@ polish:/home/zseder/Sandbox/HunspellDictionaries/Polish/pl_PL \
 spanish:/home/zseder/Sandbox/HunspellDictionaries/Spanish/es_ES \
 catalan:/home/zseder/Sandbox/HunspellDictionaries/Catalan/ca_ES \
 dutch:/home/zseder/Sandbox/HunspellDictionaries/Dutch/nl_NL \
-portuguese:/home/zseder/Sandbox/HunspellDictionaries/Portuguese/myspell.pt-20091013/pt_PT \
+portuguese:/media/sda2/sztaki/myspell.pt-20091013/pt_PT \
 croatian:/home/zseder/Sandbox/HunspellDictionaries/Croatian/hr_HR \
 norwegian:/home/zseder/Sandbox/HunspellDictionaries/Norwegian/nb_NO \
 slovak:/home/zseder/Sandbox/HunspellDictionaries/Slovakian/hunspell-sk-20090330/sk_SK
 endef
 
-TEXTCAT_CONFIG = /home/zseder/Sandbox/textcat/libtextcat-2.2/langclass/conf.txt
+TEXTCAT_CONFIG = /home/judit/libtextcat-2.2/langclass/conf.txt
 TEXTCAT_CONF_LIMIT = 1.1
 
 HUNSPELL_RATIO_LIMIT = 0.6
@@ -34,6 +34,11 @@ BOILER_PLATE_LIMIT = 20
 %.raw: %.wire
 	time cat $< | python $(BIN_DIR)/wire_to_webcorp.py | python $(BIN_DIR)/clean_wire_encoding.py > $@
 
+%.raw: %.arc.gz
+	time zcat $< | python2.6 $(BIN_DIR)/arctowire_std.py | python $(BIN_DIR)/wire_to_webcorp.py | python $(BIN_DIR)/clean_wire_encoding.py > $@
+
+%.raw: %.arc
+	time cat $< | python2.6 $(BIN_DIR)/arctowire_std.py | python $(BIN_DIR)/wire_to_webcorp.py | python $(BIN_DIR)/clean_wire_encoding.py > $@
 %.parsed: %.raw
 	time cat $< | $(BIN_DIR)/htmldetag | $(BIN_DIR)/boilerplatefilter $(BOILER_PLATE_LIMIT) | $(BIN_DIR)/htmlformat | $(BIN_DIR)/html_entity_replacer > $@
 

@@ -35,11 +35,12 @@ import cProfile
 sys.stdout.softspace = False
 
 # project includes
-SRC_DIR="/home/judit/webcorpus/bin"
-sys.path.append(SRC_DIR)
+BIN_DIR="../bin"
+sys.path.append(BIN_DIR)
 import splitcode
 
 # regex to recognize new documents in heritrix output
+# not thoroughly tested
 NEWDOCREGEX = "^http.*(\d{1,3}\.){3}\d{1,3}\ \d"
 #NEWDOCREGEX = "^http.*(\d{1,3}\.){3}\d{1,3}\ \d{14}"
 
@@ -97,7 +98,7 @@ def main():
             match = prog.match(line)
             if match:
             # saving document with wire markup
-                print DOCSTART ,
+                print DOCEND ,
                 mimetype = line.split(' ')[-2]
                 if mimetype.lower() in supported_types:
                     s = state.firstline

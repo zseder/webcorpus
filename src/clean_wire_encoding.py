@@ -29,7 +29,6 @@ from splitcode import header, footer
 charset_pattern = re.compile(r"<meta[^>]*charset=([a-zA-Z\-0-9\"\']*)")
 available_encodings = set((_.lower() for _ in aliases.keys()))
 available_encodings |= set((_.lower() for _ in aliases.values()))
-
 # for detect invalid positions in UnicodeError message
 position_interval_pattern = re.compile(r"position ([0-9]*)-([0-9]*)")
 position_pattern = re.compile(r"position ([0-9]*):")

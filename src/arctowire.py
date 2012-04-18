@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # this script converts heritrix web crawler output (ARC) to
 # wire output
 # the webcorpus pipeline uses wire archives
+# this is a highly configurable version of the arctowire_std script
 
 # python library includes
 import re

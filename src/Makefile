@@ -1,19 +1,20 @@
 BIN_DIR = ../bin
 RES_DIR = ../res
+TEXTCAT_SRC_DIR = ~/libtextcat-2.2/src
 
 CC = gcc
 CCPP = g++
 CPPFLAGS = -Wall -pedantic -Wno-format -Ishash/src -O3
 
-TEXTCAT_OPT = -I/home/zseder/Sandbox/textcat/libtextcat-2.2/src
-TEXTCAT_LIB_OPT =-L/home/zseder/.local/lib -ltextcat -static
+TEXTCAT_OPT = -I/$(TEXTCAT_SRC_DIR)
+TEXTCAT_LIB_OPT =-L/usr/local/lib -ltextcat -static
 CPPFLAGS += $(TEXTCAT_OPT)
 
-HUNSPELL_LIB_OPT =-lhunspell-1.3 -L/home/zseder/.local/lib -static
+HUNSPELL_LIB_OPT =-lhunspell-1.3 -L/usr/local/lib -static
 
 FLEX_BINS = htmldetag htmlformat get_htmls_from_wire
 FLEX_SRC = htmldetag.flex htmlformat.flex get_htmls_from_wire.flex
-PYTHON_SCRIPTS = clean_wire_encoding.py wire_to_webcorp.py
+PYTHON_SCRIPTS = clean_wire_encoding.py wire_to_webcorp.py arctowire_std.py
 CPP_BINS = sentencefilter textcatfilter hunspellfilter docfilter dupfilter neardupfilter clean_encoding html_entity_replacer boilerplatefilter
 
 LANG = undefined
