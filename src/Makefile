@@ -1,16 +1,14 @@
+include Makefile.inc
+
 BIN_DIR = ../bin
 RES_DIR = ../res
-TEXTCAT_SRC_DIR = ~/libtextcat-2.2/src
 
 CC = gcc
 CCPP = g++
 CPPFLAGS = -Wall -pedantic -Wno-format -Ishash/src -O3
 
-TEXTCAT_OPT = -I/$(TEXTCAT_SRC_DIR)
-TEXTCAT_LIB_OPT =-L/usr/local/lib -ltextcat -static
+TEXTCAT_OPT = -I/$(TEXTCAT_INC_DIR)
 CPPFLAGS += $(TEXTCAT_OPT)
-
-HUNSPELL_LIB_OPT =-lhunspell-1.3 -L/usr/local/lib -static
 
 FLEX_BINS = htmldetag htmlformat get_htmls_from_wire
 FLEX_SRC = htmldetag.flex htmlformat.flex get_htmls_from_wire.flex
