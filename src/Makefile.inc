@@ -16,28 +16,30 @@ endef
 #HUNSPELL_LIB_DIR = 
 #HUNSPELL_LIB_OPT =-l$(HUNSPELL_LIB_VER) -L$(HUNSPELL_LIB_DIR) -static
 
+
+SRC_DIR ?= .
 ifndef TEXTCAT_DIR
-$(error Define TEXTCAT_DIR in $(SCR_DIR)/Makefile.inc before proceeding)
+$(error Define TEXTCAT_DIR in $(SRC_DIR)/Makefile.inc before proceeding)
 endif
 ifndef TEXTCAT_INC_DIR
-$(error Define TEXTCAT_INC_DIR in $(SCR_DIR)/Makefile.inc before proceeding)
+$(error Define TEXTCAT_INC_DIR in $(SRC_DIR)/Makefile.inc before proceeding)
 endif
 ifndef TEXTCAT_LIB_DIR
-$(error Define TEXTCAT_LIB_DIR in $(SCR_DIR)/Makefile.inc before proceeding)
+$(error Define TEXTCAT_LIB_DIR in $(SRC_DIR)/Makefile.inc before proceeding)
 endif
 ifndef TEXTCAT_CONFIG
-$(error Define TEXTCAT_CONFIG in $(SCR_DIR)/Makefile.inc before proceeding)
+$(error Define TEXTCAT_CONFIG in $(SRC_DIR)/Makefile.inc before proceeding)
 endif
 ifndef TEXTCAT_LIB_OPT
-$(error Define TEXTCAT_LIB_OPT in $(SCR_DIR)/Makefile.inc before proceeding)
+$(error Define TEXTCAT_LIB_OPT in $(SRC_DIR)/Makefile.inc before proceeding)
 endif
 
 ifndef HUNSPELL_LIB_VER
-$(error Define HUNSPELL_LIB_VER in $(SCR_DIR)/Makefile.inc before proceeding)
+$(error Define HUNSPELL_LIB_VER in $(SRC_DIR)/Makefile.inc before proceeding)
 endif
 ifndef HUNSPELL_LIB_DIR
-$(error Define HUNSPELL_LIB_DIR in $(SCR_DIR)/Makefile.inc before proceeding)
+$(error Define HUNSPELL_LIB_DIR in $(SRC_DIR)/Makefile.inc before proceeding)
 endif
 ifndef HUNSPELL_LIB_OPT
-$(error Define HUNSPELL_LIB_OPT in $(SCR_DIR)/Makefile.inc before proceeding)
+$(error Define HUNSPELL_LIB_OPT in $(SRC_DIR)/Makefile.inc before proceeding)
 endif
