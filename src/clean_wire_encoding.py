@@ -33,7 +33,7 @@ available_encodings |= set((_.lower() for _ in aliases.values()))
 position_interval_pattern = re.compile(r"position ([0-9]*)-([0-9]*)")
 position_pattern = re.compile(r"position ([0-9]*):")
 
-def test_encoding(t, enc):
+def test_encoding(t, enc, stop_at=None):
     """
     tests a "t" text decoding with enc and returns how many decode errors
     occured in the whole text
@@ -52,24 +52,28 @@ def test_encoding(t, enc):
                 start, stop = int(s.group(1)), int(s.group(2))
                 t = t[stop+1:]
                 c += 1
+                if stop_at is not None and c == stop_at:
+                    break
             else:
                 s = position_pattern.search(msg)
                 if s is not None:
                     pos = int(s.group(1))
                     t = t[pos+1:]
                     c += 1
+                    if stop_at is not None and c == stop_at:
+                        break
                 else:
                     raise e
     return c
 
-def mydecode(doc):
+def mydecode(doc, stop_at=5):
     """
     decodes doc first with utf-8, but if fails, tries to detect
     encoding and decode doc with that
     """
 
-    utf_result = test_encoding(doc, "utf-8")
-    if utf_result < 5:
+    utf_result = test_encoding(doc, "utf-8", stop_at=stop_at)
+    if utf_result < stop_at:
         decoded = doc.decode("utf-8", "replace")
         return decoded
     else:
