@@ -81,7 +81,7 @@ def mydecode(doc, stop_at=5):
         enc_in_file = None
         if search_obj is not None:
             enc_in_file = search_obj.group(1).strip("\"").strip("'").lower().replace('-','_')
-            if enc_in_file is not None and enc_in_file in available_encodings and test_encoding(doc, enc_in_file) == 0:
+            if enc_in_file is not None and enc_in_file in available_encodings and test_encoding(doc, enc_in_file, stop_at=1) == 0:
                 decoded = doc.decode(enc_in_file)
                 return decoded
 
