@@ -1,16 +1,17 @@
-This project is a collection of scripts and programs for creating webcorpus
+This project is a collection of scripts and programs for creating a webcorpus
 from crawled data.
-The input is extracted data from wire crawler (http://www.cwr.cl/projects/WIRE/)
-and the output is a text file with document separators and raw text
+The input data is extracted by the wire crawler
+(http://www.cwr.cl/projects/WIRE/) and the output is a text file with document
+separators and raw text
 
 Dependencies:
 - gcc
 - flex
 - libtextcat
   - http://software.wise-guys.nl/libtextcat/
-  - WARNING: libtextcat unfortunately uses confidence parameter as predefined,
-    and it cannot be changed in runtime, we created a little patch that does the
-    work so before compiling and installing libtextcat, please apply our patch
+  - WARNING: libtextcat unfortunately uses a predefined confidence parameter,
+    which cannot be changed at runtime. we created a little patch fixing this,
+    so before compiling and installing libtextcat, please apply our patch
     at src/libtextcat-2.2.patch with
     - patch -p1 < /path/to/libtextcat-2.2.patch # while being in a directory
       that contains original libtextcat-2.2; or
@@ -51,7 +52,7 @@ Usage:
       - make mylang.neardedup
       - make mylang.tokenized
     - this cannot be shortened with "make mylang.tokenized" because
-      then optional cleaning won't run; this depends on users needs and data
+      then optional cleaning won't run; this depends on user needs and data
 
 - if processing a language, one has to edit dat/Makefile and add hunspell
   dictionaries in the same format  in which there are already some,
@@ -61,20 +62,18 @@ Usage:
   TEXTCAT_CONFIG an TEXTCAT_CONF_LIMIT variables.
 
 WIRE troubles
-- There are some encoding issues in wire (especially when run didn't end
-  correctly) like:
-  - html is not in utf-8 even though it supposed to be (set in wire.conf)
-  - some htmls lie about in what encoding they are, and so some characters
-    will get messed up, and it's cannot be fixed with a simple iconv anymore
-    Main problem is when a multibyte utf-8 character is handled as more
-    characters in a 1-byte encoding, then ugly things happen
-- when WIRE is crashed while running gatherer or seeder, crawling cannot be
-  continued and data can be extracted in a hard way. The only thing we can do
-  is in dat/Makefile in the target where creating .raw from 
-  .not_extractable_wire
+- There are some encoding issues in wire (especially when the run didn't end
+  correctly) such as:
+  - html is not in utf-8 even though it is supposed to be (set in wire.conf)
+  - some htmls lie about their encoding, so some characters
+    will get messed up, and it cannot be fixed with a simple iconv anymore
+    The main problem is when a multibyte utf-8 character is handled as more
+    characters in a 1-byte encoding, so that ugly things happen
+- when WIRE crashes while running gatherer or seeder, crawling cannot be
+  continued and data can only be extracted in a hard way. TODO one sentence
 - because of these problems, there is a "clean encoding" phase in dat/Makefile
-  after language filtering, and the reason of its place is that our cleaning
+  after language filtering, and the reason of its location is that our cleaning
   procedure uses clean data for character statistics, and it is extracted
   from data that is already in a specific language judged by hunspell or
   textcat. After cleaning, a second language filtering runs because it now will
-  give you more good data in given language.
+  give you more good data in the given language.

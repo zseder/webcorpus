@@ -1,3 +1,4 @@
 - dependency checker script (instead of configure)
 - help text should be added to binaries
 - add paper link and bibtex when published
+- freqdict script
