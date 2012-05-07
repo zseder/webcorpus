@@ -70,7 +70,9 @@ WIRE troubles
     The main problem is when a multibyte utf-8 character is handled as more
     characters in a 1-byte encoding, so that ugly things happen
 - when WIRE crashes while running gatherer or seeder, crawling cannot be
-  continued and data can only be extracted in a hard way. TODO one sentence
+  continued and data can only be extracted in a hard way.
+  wire-data/text/storage.raw has to be renamed to mylang.not_extractable_wire
+  and process data afterwards (see one scenario above)
 - because of these problems, there is a "clean encoding" phase in dat/Makefile
   after language filtering, and the reason of its location is that our cleaning
   procedure uses clean data for character statistics, and it is extracted
