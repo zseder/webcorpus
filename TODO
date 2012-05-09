@@ -1,4 +1,4 @@
-- freqdict script
+wikipage on github should be written about running WIRE
 - help text should be added to binaries
 - script around WIRE to avoid 2 main problems:
   - slow fseek when very big files
