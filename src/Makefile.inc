@@ -4,6 +4,9 @@ lang1:filename_without_aff_or_dic \
 langn:filename_without_aff_or_dic
 endef
 
+# Hunspell binary: set to installed hunspell binary
+#HUNSPELL = /usr/bin/hunspell
+
 # Change next to point at textcats dir and uncomment
 #TEXTCAT_DIR = 
 #TEXTCAT_INC_DIR = $(TEXTCAT_DIR)/src
@@ -18,6 +21,10 @@ endef
 
 
 SRC_DIR ?= .
+ifndef HUNSPELL
+$(error Define HUNSPELL in $(SRC_DIR)/Makefile.inc before proceeding)
+endif
+
 ifndef TEXTCAT_DIR
 $(error Define TEXTCAT_DIR in $(SRC_DIR)/Makefile.inc before proceeding)
 endif

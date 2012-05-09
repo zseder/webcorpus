@@ -12,7 +12,7 @@ CPPFLAGS += $(TEXTCAT_OPT)
 
 FLEX_BINS = htmldetag htmlformat get_htmls_from_wire
 FLEX_SRC = htmldetag.flex htmlformat.flex get_htmls_from_wire.flex
-PYTHON_SCRIPTS = clean_wire_encoding.py wire_to_webcorp.py arctowire_std.py
+PYTHON_SCRIPTS = clean_wire_encoding.py wire_to_webcorp.py arctowire_std.py join_stemdict_freq.py freq.py
 CPP_BINS = sentencefilter textcatfilter hunspellfilter docfilter dupfilter neardupfilter clean_encoding html_entity_replacer boilerplatefilter
 
 LANG = undefined
