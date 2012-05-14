@@ -1,7 +1,7 @@
 BIN_DIR = ../bin
 SRC_DIR = ../src
 
-include $(SCR_DIR)/Makefile.inc
+include $(SRC_DIR)/Makefile.inc
 
 TEXTCAT_CONF_LIMIT = 1.1
 
