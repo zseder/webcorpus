@@ -39,7 +39,7 @@ BOILER_PLATE_LIMIT = 20
 	lang=`basename $< .senfiltered`; \
 		d=`for e in $(DICTS); do echo $$e; done | grep "$$lang" | cut -f2 -d":"`;\
 		if [ -z "$$d" ]; then \
-		    time cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@; \
+		    time cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $${lang} $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@; \
 		else \
 			time cat $< | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>$${lang}.bad > $@ ;\
 	    fi
@@ -52,7 +52,7 @@ BOILER_PLATE_LIMIT = 20
 	lang=`basename $< .cleaned`; \
 		d=`for e in $(DICTS); do echo $$e; done | grep "$$lang" | cut -f2 -d":"`;\
 		if [ -z "$$d" ]; then \
-		    time cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $$lang $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@; \
+		    time cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $${lang} $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@; \
 		else \
 			time cat $< | $(BIN_DIR)/hunspellfilter $$d.aff $$d.dic $(HUNSPELL_RATIO_LIMIT) 2>$${lang}.bad > $@ ;\
 	    fi
