@@ -29,7 +29,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 %s CONTENT PRECONTENT
     #include "splitcode.h"
     /* whitespaces: space, tab, \240 */
-SPACE [ 	\240]
+/*SPACE [ 	\240]*/
+SPACE \x20|\x09a|\240|\xc2\xa0
 NEWLINE [\n\f\v]
 %%
 "DOCSTART "[0-9]+" "[0-9]+"\n" {		
@@ -50,9 +51,8 @@ NEWLINE [\n\f\v]
 
 "DOCEND "[0-9]+" "[0-9]+"\n" {		
 		if (strncmp(yytext, SPLITCODE, SPLITCODELEN) == 0) {
-
-			BEGIN(INITIAL);
 			printf("\n");
+			BEGIN(INITIAL);
 		}
 		printf("\n%s\n",yytext);
 }
