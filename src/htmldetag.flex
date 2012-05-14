@@ -50,7 +50,9 @@ CHARSTYLE ("i"|"b"|"tt"|"strike"|"s"|"u"|"big"|"small"|"font"|"span"|"em"|"stron
 		printf("<p>");
 }
 	
-<CONTENT>"<""/"?{CHARSTYLE}(" "[^>]*)?">"
+<CONTENT>"<""/"?{CHARSTYLE}(" "[^>]*)?">" {
+    printf(" ");
+}
 
     /* deleting tags that does not usually contain text */
 <CONTENT>"<title>" { BEGIN(TITLE); }
