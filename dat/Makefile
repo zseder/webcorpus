@@ -79,7 +79,7 @@ BOILER_PLATE_LIMIT = 20
 	lang=`basename $< .freq`; \
 		d=`for e in $(DICTS); do echo $$e; done | grep "$$lang" | cut -f2 -d":"`;\
 		if [ -z "$$d" ]; then \
-		    @echo ERROR: if there is no hunspell dict provided, stemdict file has to be created manually!; \
+		    echo "ERROR: if there is no hunspell dict provided, stemdict file has to be created manually!"; \
 		else \
 		    analyzed=`mktemp`; cat $< | awk '{print $2}' - | $(HUNSPELL) -s -d $$d -i utf-8 > $$analyzed; \
 			words=`mktemp`; grep " " $$analyzed | cut -f1 -d" " > $$words; \
