@@ -33,7 +33,7 @@ char get_next_utf8_char_len(const char* buf, int max_left_bytes)
         n = 1;
     else if (b0 < 192)
         // first byte should not be this
-        n = -1;
+        n = 0;
     else if (2 <= max_left_bytes && b0 < 224 &&
             VALID_CONT(buf[1]))
         n = 2;
@@ -235,12 +235,7 @@ void fix_1byte_encoding(const char* input, const long freq[], iconv_t iconvs[], 
     for(i=0; i < l;i++)
     {
         char next_utf8_len = get_next_utf8_char_len(&input[i], l - i);
-        if (next_utf8_len == 0)
-        {
-            // skip character, its not valid and messes up data
-
-        }
-        else if (next_utf8_len > 0)
+        if (next_utf8_len > 0)
         {
             // valid utf8 character, we skip it, we care about invalid bytes
             strncpy(&output[pos_in_result], &input[i], next_utf8_len);
