@@ -37,7 +37,7 @@ BOILER_PLATE_LIMIT = 20
 
 %.langfiltered: %.senfiltered
 	lang=`basename $< .senfiltered`; \
-		d=`for e in $(DICTS); do echo $$e; done | grep "$$lang" | cut -f2 -d":"`;\
+		d=`for e in $(DICTS); do echo $$e; done | grep "$${lang}" | cut -f2 -d":"`;\
 		if [ -z "$$d" ]; then \
 		    time cat $< | $(BIN_DIR)/textcatfilter $(TEXTCAT_CONFIG) $${lang} $(TEXTCAT_CONF_LIMIT) 2>$${lang}.bad > $@; \
 		else \
@@ -81,9 +81,9 @@ BOILER_PLATE_LIMIT = 20
 		if [ -z "$$d" ]; then \
 		    echo "ERROR: if there is no hunspell dict provided, stemdict file has to be created manually!"; \
 		else \
-		    analyzed=`mktemp`; cat $< | awk '{print $2}' - | $(HUNSPELL) -s -d $$d -i utf-8 > $$analyzed; \
+		    analyzed=`mktemp`; cat $< | awk '{print $$2}' - | $(HUNSPELL) -s -d $$d -i utf-8 > $$analyzed; \
 			words=`mktemp`; grep " " $$analyzed | cut -f1 -d" " > $$words; \
-			encoding=`grep "^SET" $$d.aff | awk '{print $2}' -`; \
+			encoding=`grep "^SET" $$d.aff | awk '{print $$2}' -`; \
 			stems=`mktemp`; grep " " $$analyzed | cut -f2 -d" " | iconv -f$$encoding -tutf-8 > $$stems; \
 			pasted=`mktemp`; paste $$words $$stems > $$pasted; \
 			python $(BIN_DIR)/join_stemdict_freq.py $$pasted $< > $@; \
