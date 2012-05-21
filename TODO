@@ -1,7 +1,3 @@
 - help text should be added to binaries
-- script around WIRE to avoid 2 main problems:
-  - slow fseek when very big files
-  - interrupted crawls cannot be always continued
-
 - dependency checker script (instead of configure)
 - add paper link and bibtex when published

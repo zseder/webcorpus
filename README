@@ -36,7 +36,9 @@ Usage:
       - make mylang.langfiltered
       - make mylang.dedup
       - make mylang.neardedup
-      - make mylang.tokenized
+      - make mylang.tok
+      - make mylang.freq
+      - make mylang.stemdict
     - OR simply (because of make discovers dependencies):
       - make mylang.tokenized
   - there were some troubles in crawling
@@ -50,7 +52,9 @@ Usage:
       - make mylang.cleaned_langfiltered # see WIRE troubles later in this file
       - make mylang.dedup
       - make mylang.neardedup
-      - make mylang.tokenized
+      - make mylang.tok
+      - make mylang.freq
+      - make mylang.stemdict
     - this cannot be shortened with "make mylang.tokenized" because
       then optional cleaning won't run; this depends on user needs and data
 
@@ -62,6 +66,8 @@ Usage:
   TEXTCAT_CONFIG an TEXTCAT_CONF_LIMIT variables.
 
 WIRE troubles
+- when setting maxdoc in xml config too high, crawling really slows down after
+  a few rounds. See crawling tutorial on wiki page at github for details
 - There are some encoding issues in wire (especially when the run didn't end
   correctly) such as:
   - html is not in utf-8 even though it is supposed to be (set in wire.conf)
