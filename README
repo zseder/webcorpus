@@ -3,6 +3,8 @@ from crawled data.
 The input data is extracted by the wire crawler
 (http://www.cwr.cl/projects/WIRE/) and the output is a text file with document
 separators and raw text
+A sample output data can be found at the homepage of our research group at
+http://hlt.sztaki.hu/resources/webcorpora.html
 
 Dependencies:
 - gcc
