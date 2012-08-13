@@ -58,7 +58,7 @@ UB [\200-\277]
 [\.]{2,} {
     printf(" %s", yytext);
 }
-".\n" {
+"."{SPACE}*"\n" {
     printf(" .\n");
 }
 {ISALNUM}|{SPACE}|[\.\'\`\,\-] {
