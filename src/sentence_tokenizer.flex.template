@@ -22,11 +22,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 %option noyywrap
 
-%s AFTER_NUM_STATE
-%s IN_SEN_STATE ENDOF_SEN_STATE AFTER_FINAL_CLOSING_STATE
+%s AFTER_NUM_STATE IN_SEN_STATE ENDOF_SEN_STATE AFTER_FINAL_CLOSING_STATE AFTER_NBP
 
 %{
-    #include "splitcode.h"
     int was_space = 0;
 %}
 
@@ -91,11 +89,12 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
     BEGIN(IN_SEN_STATE);
 }
 
-<IN_SEN_STATE>{SPACE}{NONBREAKING_PREFIX}{PERIOD} {
+<INITIAL,IN_SEN_STATE>{SPACE}*{NONBREAKING_PREFIX}{PERIOD} {
     // never break at nonbreaking prefixes
     printf(yytext);
+    BEGIN(AFTER_NBP);
 }
-<INITIAL>{NONBREAKING_PREFIX}{PERIOD} {
+<AFTER_NBP>{SPACE}?{ISALNUM} {
     printf(yytext);
     BEGIN(IN_SEN_STATE);
 }
