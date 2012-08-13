@@ -398,24 +398,17 @@ size_t decode_html_entities_utf8(char *dest, const char *src)
 
 int main(int argc, char *argv[])
 {
-    Doc* doc = new Doc();
-	while(get_doc(stdin, doc) > 0)
-	{
-        cout << "DOCSTART " << SPLITCODE << " " << doc->id << endl;
-        const char* cstr =doc->text.c_str();
-        char* mystr = (char*)calloc(doc->text.size() + 1,sizeof(char));
-        if (mystr == NULL)
-        {
-            cerr << "malloc error!!!\n";
-            exit(-1);
-        }
-        decode_html_entities_utf8(mystr,cstr);
+    FILE * fp;
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    while ((read = getline(&line, &len, stdin)) != -1) {
+        char* mystr = (char*)calloc(read + 1,sizeof(char));
+        decode_html_entities_utf8(mystr, line);
         cout << mystr;
-        free(mystr);
-        mystr = 0;
-        cout << "DOCEND " << SPLITCODE << " " << doc->id << endl;
-        delete doc;
-        doc = new Doc();
-	}
-    return 0;
+    }
+    if (line)
+        free(line);
+    return EXIT_SUCCESS;
 }
+
