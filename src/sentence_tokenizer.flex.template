@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 %option noyywrap
 
-%x AFTER_NUM_STATE
-%x START_SEN_STATE IN_SEN_STATE ENDOF_SEN_STATE AFTER_FINAL_CLOSING_STATE
+%s AFTER_NUM_STATE
+%s IN_SEN_STATE ENDOF_SEN_STATE AFTER_FINAL_CLOSING_STATE
 
 %{
     #include "splitcode.h"
@@ -60,15 +60,7 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
 
 %%
 
-<INITIAL,START_SEN_STATE,AFTER_NUM_STATE,IN_SEN_STATE,ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>"DOCSTART "[0-9]+" "[0-9]+"\n" {		
-		printf("\n%s", yytext);
-        BEGIN(START_SEN_STATE);
-}
-<INITIAL,START_SEN_STATE,AFTER_NUM_STATE,IN_SEN_STATE,ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>"DOCEND "[0-9]+" "[0-9]+"\n" {		
-		printf("\n%s", yytext);
-}
-
-<START_SEN_STATE,AFTER_NUM_STATE,IN_SEN_STATE,ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>"\n\n" {
+<INITIAL,AFTER_NUM_STATE,IN_SEN_STATE,ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>"\n\n" {
     // at paragraph endings, add new line, it must be end of sentence, too
     printf("\n");
     BEGIN(IN_SEN_STATE);
@@ -81,7 +73,7 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
 }
 
     /* handle periods around numbers */
-<START_SEN_STATE,IN_SEN_STATE>{ISNUM}+ {
+<INITIAL,IN_SEN_STATE>{ISNUM}+ {
     printf("%s", yytext);
     BEGIN(AFTER_NUM_STATE);
 }
@@ -103,7 +95,7 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
     // never break at nonbreaking prefixes
     printf(yytext);
 }
-<START_SEN_STATE>{NONBREAKING_PREFIX}{PERIOD} {
+<INITIAL>{NONBREAKING_PREFIX}{PERIOD} {
     printf(yytext);
     BEGIN(IN_SEN_STATE);
 }
@@ -131,14 +123,14 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
     printf("%s", yytext);
     BEGIN(ENDOF_SEN_STATE);
 }
-<START_SEN_STATE,IN_SEN_STATE>. {
+<INITIAL,IN_SEN_STATE>. {
     printf("%s", yytext);
     BEGIN(IN_SEN_STATE);
 }
 <ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>{SPACE}*"\n"{STARTOF_SEN} {
     // if at a possible end of sentence, there is a newline, handle it as endof sentence
     printf(yytext);
-    BEGIN(START_SEN_STATE);
+    BEGIN(INITIAL);
 }
 
 <ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>{SPACE}+ {
@@ -153,7 +145,7 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
     if (was_space) {
         printf("\n%s", yytext);
         was_space = 0;
-        BEGIN(START_SEN_STATE);
+        BEGIN(INITIAL);
     }
     else {
         printf("%s", yytext);
@@ -163,7 +155,7 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
 <AFTER_FINAL_CLOSING_STATE>{STARTOF_SEN} {
     printf("\n%s", yytext);
     was_space = 0;
-    BEGIN(START_SEN_STATE);
+    BEGIN(INITIAL);
 }
 <ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>. {
     // else: continue without newline
