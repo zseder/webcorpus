@@ -22,10 +22,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 %option noyywrap
 
-%s AFTER_NUM_STATE IN_SEN_STATE ENDOF_SEN_STATE AFTER_FINAL_CLOSING_STATE AFTER_NBP
+%s AFTER_NUM_STATE AFTER_NBP ENDOF_SEN_STATE ENDOF_SEN_STATE_SPACE AFTER_FINAL_CLOSING_STATE 
 
 %{
-    int was_space = 0;
 %}
 
 INSERT_CHARACTER_DEFS
@@ -58,59 +57,91 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
 
 %%
 
-<INITIAL,AFTER_NUM_STATE,IN_SEN_STATE,ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>"\n\n" {
+"\n\n" {
     // at paragraph endings, add new line, it must be end of sentence, too
-    printf("\n");
-    BEGIN(IN_SEN_STATE);
+    printf(yytext);
+    BEGIN(INITIAL);
 }
-
-<AFTER_NUM_STATE,IN_SEN_STATE>"\n" {
-    // if it cannot be an end of sentence, change newline to space and continue with same sentence
+<INITIAL>"\n" {
     printf(" ");
-    BEGIN(IN_SEN_STATE);
 }
-
-    /* handle periods around numbers */
-<INITIAL,IN_SEN_STATE>{ISNUM}+ {
-    printf("%s", yytext);
-    BEGIN(AFTER_NUM_STATE);
-}
-<AFTER_NUM_STATE>{PERIOD}({ISNUM}|"-")+ {
+<INITIAL>{ISNUM}+ {
     printf(yytext);
     BEGIN(AFTER_NUM_STATE);
 }
-<AFTER_NUM_STATE>{PERIOD}+ {
-    // if there is a period after a number, and patterns before not matched, this could be an end of sentence
-    printf("%s", yytext);
-    BEGIN(ENDOF_SEN_STATE);
-}
-<AFTER_NUM_STATE>. {
-    printf("%s", yytext);
-    BEGIN(IN_SEN_STATE);
-}
-
-<INITIAL,IN_SEN_STATE>{SPACE}*{NONBREAKING_PREFIX}{PERIOD} {
+<INITIAL>{SPACE}{NONBREAKING_PREFIX}{PERIOD} {
     // never break at nonbreaking prefixes
     printf(yytext);
     BEGIN(AFTER_NBP);
 }
-<AFTER_NBP>{SPACE}?{ISALNUM} {
-    printf(yytext);
-    BEGIN(IN_SEN_STATE);
-}
-<IN_SEN_STATE>{PERIOD}(({ISUPPER}|"-")+{PERIOD})+ {
+<INITIAL>(({PERIOD}(({ISUPPER}|"-")+{PERIOD})+)|{ENDOF_SEN}|({PERIOD}+)) {
     // these are possible abbreviations
     printf(yytext);
     BEGIN(ENDOF_SEN_STATE);
 }
-<IN_SEN_STATE>{ISLOWER}{PERIOD}{ISLOWER} {
+<INITIAL>{ISLOWER}{PERIOD}{ISLOWER} {
     // lowercase abbreviations
-    printf("%s", yytext);
+    printf(yytext);
 }
-<IN_SEN_STATE>{PERIOD}+ {
-    // any other case of "." (or more of them) can be an end of sentence
-    printf("%s", yytext);
+<INITIAL>. {
+    printf(yytext);
+}
+
+<AFTER_NUM_STATE>"\n" {
+    // if it cannot be an end of sentence, change newline to space and continue with same sentence
+    printf(" ");
+    BEGIN(INITIAL);
+}
+<AFTER_NUM_STATE>{PERIOD}({ISNUM}|"-")+ {
+    // handle periods around numbers
+    printf(yytext);
+}
+<AFTER_NUM_STATE>{PERIOD}+ {
+    // if there is a period after a number, and patterns before not matched, this could be an end of sentence
+    printf(yytext);
     BEGIN(ENDOF_SEN_STATE);
+}
+<AFTER_NUM_STATE>. {
+    printf(yytext);
+    BEGIN(INITIAL);
+}
+
+<AFTER_NBP>{SPACE}?{ISALNUM} {
+    printf(yytext);
+    BEGIN(INITIAL);
+}
+
+<ENDOF_SEN_STATE>"\n"{STARTOF_SEN} {
+    // if at a possible end of sentence, there is a newline, handle it as endof sentence
+    printf(yytext);
+    BEGIN(INITIAL);
+}
+<ENDOF_SEN_STATE>{SPACE}+ {
+    BEGIN(ENDOF_SEN_STATE_SPACE);
+}
+<ENDOF_SEN_STATE>{FINAL_CLOSING}+ {
+    printf(yytext);
+    BEGIN(AFTER_FINAL_CLOSING_STATE);
+}
+<ENDOF_SEN_STATE>{STARTOF_SEN} {
+    printf("%s", yytext);
+    BEGIN(INITIAL);
+}
+<ENDOF_SEN_STATE>. {
+    printf(yytext);
+    BEGIN(INITIAL);
+}
+
+<ENDOF_SEN_STATE_SPACE>{NONBREAKING_PREFIX}{PERIOD} {
+    // never break at nonbreaking prefixes
+    printf("\n");
+    printf(yytext);
+    BEGIN(AFTER_NBP);
+}
+<ENDOF_SEN_STATE_SPACE>{STARTOF_SEN} {
+    printf("\n");
+    printf(yytext);
+    BEGIN(INITIAL);
 }
 
     /* "?!.:" end of sentence markers followed by CLOSING_SIGN and OPENING_SIGN and after that, sentence starters. 
@@ -118,48 +149,17 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
        only if there were at least one closing sign or opening sign between period/!?: and Capital sentence starter.
        The simple case of tokenizing period->space->capital, without closing and opening signs are handled differently
     */
-<IN_SEN_STATE>{ENDOF_SEN} {
-    printf("%s", yytext);
-    BEGIN(ENDOF_SEN_STATE);
-}
-<INITIAL,IN_SEN_STATE>. {
-    printf("%s", yytext);
-    BEGIN(IN_SEN_STATE);
-}
-<ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>{SPACE}*"\n"{STARTOF_SEN} {
+<AFTER_FINAL_CLOSING_STATE>{SPACE}*"\n"{STARTOF_SEN} {
     // if at a possible end of sentence, there is a newline, handle it as endof sentence
     printf(yytext);
     BEGIN(INITIAL);
 }
-
-<ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>{SPACE}+ {
-    printf(" ");
-    was_space = 1;
-}
-<ENDOF_SEN_STATE>{FINAL_CLOSING}+ {
-    printf("%s", yytext);
-    BEGIN(AFTER_FINAL_CLOSING_STATE);
-}
-<ENDOF_SEN_STATE>{STARTOF_SEN} {
-    if (was_space) {
-        printf("\n%s", yytext);
-        was_space = 0;
-        BEGIN(INITIAL);
-    }
-    else {
-        printf("%s", yytext);
-        BEGIN(IN_SEN_STATE);
-    }
-}
 <AFTER_FINAL_CLOSING_STATE>{STARTOF_SEN} {
     printf("\n%s", yytext);
-    was_space = 0;
     BEGIN(INITIAL);
 }
-<ENDOF_SEN_STATE,AFTER_FINAL_CLOSING_STATE>. {
-    // else: continue without newline
-    printf("%s", yytext);
-    was_space = 0;
-    BEGIN(IN_SEN_STATE);
+<AFTER_FINAL_CLOSING_STATE>. {
+    printf(yytext);
+    BEGIN(INITIAL);
 }
 
