@@ -145,11 +145,6 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
     BEGIN(INITIAL);
 }
 
-    /* "?!.:" end of sentence markers followed by CLOSING_SIGN and OPENING_SIGN and after that, sentence starters. 
-       the main reason of this four done one by one is that we want to split between end sentence and start sentence
-       only if there were at least one closing sign or opening sign between period/!?: and Capital sentence starter.
-       The simple case of tokenizing period->space->capital, without closing and opening signs are handled differently
-    */
 <AFTER_FINAL_CLOSING_STATE>({SPACE}|"\n")*{STARTOF_SEN} {
     // if at a possible end of sentence, there is a newline, handle it as endof sentence
     printf("\n");
