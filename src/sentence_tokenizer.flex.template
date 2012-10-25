@@ -47,7 +47,7 @@ PUNCT_INIT (\x00\xab|\x20\x18|\x20\x1b|\x20\x1c|\x20\x1f|\x20\x39|\x2e\x02|\x2e\
 
 NONPERIOD_ENDOF_SEN [!?]
 
-OPENING_SIGN [\'\"\(\[\-]
+OPENING_SIGN [\'\"\(\[\-\`]
 CLOSING_SIGN [\'\"\)\]]
 
 STARTOF_SEN (\xc2\xbf|\xc2\xa1|{PUNCT_INIT}|{OPENING_SIGN})|{ISUPPER}|{ISNUM}
@@ -59,32 +59,28 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
 
 "\n\n" {
     // at paragraph endings, add new line, it must be end of sentence, too
-    printf(yytext);
+    ECHO;
     BEGIN(INITIAL);
 }
 <INITIAL>"\n" {
     printf(" ");
 }
 <INITIAL>{ISNUM}+ {
-    printf(yytext);
+    ECHO;
     BEGIN(AFTER_NUM_STATE);
 }
 <INITIAL>{SPACE}{NONBREAKING_PREFIX}{PERIOD} {
     // never break at nonbreaking prefixes
-    printf(yytext);
+    ECHO;
     BEGIN(AFTER_NBP);
 }
-<INITIAL>(({PERIOD}(({ISUPPER}|"-")+{PERIOD})+)|{ENDOF_SEN}|({PERIOD}+)) {
+<INITIAL>({ENDOF_SEN}|{PERIOD}+) {
     // these are possible abbreviations
-    printf(yytext);
+    ECHO;
     BEGIN(ENDOF_SEN_STATE);
 }
-<INITIAL>{ISLOWER}{PERIOD}{ISLOWER} {
-    // lowercase abbreviations
-    printf(yytext);
-}
 <INITIAL>. {
-    printf(yytext);
+    ECHO;
 }
 
 <AFTER_NUM_STATE>"\n" {
@@ -94,33 +90,33 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
 }
 <AFTER_NUM_STATE>{PERIOD}({ISNUM}|"-")+ {
     // handle periods around numbers
-    printf(yytext);
+    ECHO;
 }
 <AFTER_NUM_STATE>{PERIOD}+ {
     // if there is a period after a number, and patterns before not matched, this could be an end of sentence
-    printf(yytext);
+    ECHO;
     BEGIN(ENDOF_SEN_STATE);
 }
 <AFTER_NUM_STATE>. {
-    printf(yytext);
+    ECHO;
     BEGIN(INITIAL);
 }
 
 <AFTER_NBP>{SPACE}?{ISALNUM} {
-    printf(yytext);
+    ECHO;
     BEGIN(INITIAL);
 }
 
 <ENDOF_SEN_STATE>"\n"{STARTOF_SEN} {
     // if at a possible end of sentence, there is a newline, handle it as endof sentence
-    printf(yytext);
+    ECHO;
     BEGIN(INITIAL);
 }
 <ENDOF_SEN_STATE>{SPACE}+ {
     BEGIN(ENDOF_SEN_STATE_SPACE);
 }
 <ENDOF_SEN_STATE>{FINAL_CLOSING}+ {
-    printf(yytext);
+    ECHO;
     BEGIN(AFTER_FINAL_CLOSING_STATE);
 }
 <ENDOF_SEN_STATE>{STARTOF_SEN} {
@@ -128,19 +124,24 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
     BEGIN(INITIAL);
 }
 <ENDOF_SEN_STATE>. {
-    printf(yytext);
+    ECHO;
     BEGIN(INITIAL);
 }
 
 <ENDOF_SEN_STATE_SPACE>{NONBREAKING_PREFIX}{PERIOD} {
     // never break at nonbreaking prefixes
-    printf("\n");
-    printf(yytext);
+    // printf("\n");
+    ECHO;
     BEGIN(AFTER_NBP);
 }
 <ENDOF_SEN_STATE_SPACE>{STARTOF_SEN} {
     printf("\n");
-    printf(yytext);
+    ECHO;
+    BEGIN(INITIAL);
+}
+<ENDOF_SEN_STATE_SPACE>. {
+    printf(" ");
+    ECHO;
     BEGIN(INITIAL);
 }
 
@@ -149,17 +150,14 @@ FINAL_CLOSING ({PUNCT_FINAL}|{CLOSING_SIGN}|{ENDOF_SEN})
        only if there were at least one closing sign or opening sign between period/!?: and Capital sentence starter.
        The simple case of tokenizing period->space->capital, without closing and opening signs are handled differently
     */
-<AFTER_FINAL_CLOSING_STATE>{SPACE}*"\n"{STARTOF_SEN} {
+<AFTER_FINAL_CLOSING_STATE>({SPACE}|"\n")*{STARTOF_SEN} {
     // if at a possible end of sentence, there is a newline, handle it as endof sentence
-    printf(yytext);
-    BEGIN(INITIAL);
-}
-<AFTER_FINAL_CLOSING_STATE>{STARTOF_SEN} {
-    printf("\n%s", yytext);
+    printf("\n");
+    printf("%c", yytext[strlen(yytext)-1]);
     BEGIN(INITIAL);
 }
 <AFTER_FINAL_CLOSING_STATE>. {
-    printf(yytext);
+    ECHO;
     BEGIN(INITIAL);
 }
 
