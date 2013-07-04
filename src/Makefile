@@ -1,4 +1,5 @@
-include Makefile.inc
+#include Makefile.inc
+include Makefile.inc.sample
 
 BIN_DIR = ../bin
 RES_DIR = ../res
@@ -13,7 +14,7 @@ CPPFLAGS += $(TEXTCAT_OPT)
 FLEX_BINS = htmldetag htmlformat get_htmls_from_wire
 FLEX_SRC = htmldetag.flex htmlformat.flex get_htmls_from_wire.flex
 PYTHON_SCRIPTS = clean_wire_encoding.py wire_to_webcorp.py arctowire_std.py join_stemdict_freq.py freq.py
-CPP_BINS = sentencefilter textcatfilter hunspellfilter docfilter dupfilter neardupfilter clean_encoding html_entity_replacer boilerplatefilter
+CPP_BINS = sentencefilter textcatfilter hunspellcoverage hunspellfilter docfilter dupfilter neardupfilter clean_encoding html_entity_replacer boilerplatefilter
 
 LANG = undefined
 
@@ -86,6 +87,10 @@ textcatfilter: textcatfilter.o splitcode.h
 hunspellfilter: hunspellfilter.o splitcode.h
 	$(CCPP) -o $@ hunspellfilter.o $(HUNSPELL_LIB_OPT)
 	rm hunspellfilter.o
+
+hunspellcoverage: hunspellcoverage.o splitcode.h
+	$(CCPP) -o $@ hunspellcoverage.o $(HUNSPELL_LIB_OPT)
+	rm hunspellcoverage.o
 
 neardupfilter: neardupfilter.o splitcode.h simhash
 	$(CCPP) -o $@ neardupfilter.o shash/src/simiw.o shash/src/lookup3.o shash/src/simi.o
