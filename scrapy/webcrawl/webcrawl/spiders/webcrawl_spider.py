@@ -14,6 +14,10 @@ class WebCrawler(CrawlSpider):
     rules = (Rule(LxmlLinkExtractor(), callback='parse_url', follow=True), )
 
     def parse_url(self, response):
+        if not hasattr(response, 'body_as_unicode'):
+            # possibly no text in page
+            return
+
         item = WebcrawlItem()
         item['url'] = response.url
         item['body'] = response.body_as_unicode()
