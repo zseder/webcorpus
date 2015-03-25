@@ -1,4 +1,4 @@
-from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
+from scrapy.contrib.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.contrib.spiders import CrawlSpider, Rule
 
 from webcrawl.items import WebcrawlItem
@@ -11,7 +11,7 @@ class WebCrawler(CrawlSpider):
         "http://www.origo.hu/",
         "http://www.444.hu/",
     ]
-    rules = (Rule(SgmlLinkExtractor(), callback='parse_url', follow=True), )
+    rules = (Rule(LxmlLinkExtractor(), callback='parse_url', follow=True), )
 
     def parse_url(self, response):
         item = WebcrawlItem()
