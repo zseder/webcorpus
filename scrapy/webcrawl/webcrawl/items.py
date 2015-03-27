@@ -11,5 +11,4 @@ import scrapy
 class WebcrawlItem(scrapy.Item):
     url = scrapy.Field()
     body = scrapy.Field()
-    visit_id = scrapy.Field()
-    visit_status = scrapy.Field()
+    raw = scrapy.Field()
