@@ -83,5 +83,4 @@ class WebCrawler(CrawlSpider):
     def start_requests(self):
         for url in self.urls.keys():
             r = self.make_requests_from_url(url)
-            print url, r.priority
             yield  r
