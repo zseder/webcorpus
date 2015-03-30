@@ -26,9 +26,7 @@ class WebCrawler(CrawlSpider):
 
     def __init__(self, **kwargs):
         super(WebCrawler, self).__init__(**kwargs)
-        self.urls = {}
-        for url in wp_seed():
-            self.add_url(url)
+        self.urls = set(wp_seed())
         self.li = LanguageIdentifier.from_modelstring(model, norm_probs=False)
         signal.signal(signal.SIGALRM, alarm_handler)
 
@@ -49,17 +47,17 @@ class WebCrawler(CrawlSpider):
             item['body'] = response.body_as_unicode()
 
             # langdetect
-            #lang = self.li.classify(item['body'])
-            #if lang[0] != 'hu':
-            #    self.log('not hungarian: {0}'.format(response.url), level=log.INFO)
-            #    return
+            lang = self.li.classify(item['body'])
+            if lang[0] != 'hu':
+                self.log('not hungarian: {0}'.format(response.url), level=log.INFO)
+                return
 
             # html parse with bs4
-            #s = BeautifulSoup(item['body'])
-            #for script in s(["script", "style"]):
-            #    script.extract()
-            #item['raw'] = s.get_text()
-            #del item['body']
+            s = BeautifulSoup(item['body'])
+            for script in s(["script", "style"]):
+                script.extract()
+            item['raw'] = s.get_text()
+            del item['body']
 
             #self.log('scraped {0} with priority {1}'.format(response.url, self.urls.get(response.url, 0)), level=log.INFO)
             signal.alarm(0)
@@ -69,19 +67,11 @@ class WebCrawler(CrawlSpider):
             signal.alarm(0)
             return
 
-    def process_links(self, links):
-        for link in links:
-            self.add_url(link.url)
-            yield link
-
-    def add_url(self, url):
-        self.urls[url] = self.urls.get(url, 0) + 1
-
     def make_requests_from_url(self, url):
-        return Request(url, priority=self.urls.get(url, 0))
+        return Request(url)
 
     def start_requests(self):
-        for url in self.urls.keys():
+        while len(self.urls) > 0:
+            url = self.urls.pop()
             r = self.make_requests_from_url(url)
-            print url, r.priority
             yield  r
